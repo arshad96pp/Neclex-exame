@@ -1,0 +1,719 @@
+import { Button, Col, Layout, Row, Radio, Segmented, Tabs } from "antd";
+import React, { useEffect, useState } from "react";
+
+const MatrixMultipleChoiceQuestion = ({
+  question,
+  options,
+  onAnswerSelected,
+  currentQuestionIndex,
+  handlePreviousQuestion,
+  savedAnswers, // Add a new prop to pass the saved answers for this question
+}) => {
+  const [tabs, setTabs] = useState("tab1");
+  const [answers, setAnswers] = useState(savedAnswers || []); // Initialize with saved answers
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 780);
+  const [alignValue, setAlignValue] = React.useState("center");
+
+  const handleOptionChange = (rowIndex, value) => {
+    const newAnswers = [...answers];
+    newAnswers[rowIndex] = value; // Store only the selected value for each row
+    setAnswers(newAnswers);
+  };
+
+  const handleNextClick = () => {
+    onAnswerSelected(answers);
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 780);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    setAnswers(savedAnswers || []);
+  }, [savedAnswers]);
+
+  // tabs
+  const onChange = (key) => {
+    console.log(key);
+  };
+  const items = [
+    {
+      key: "1",
+      label: "Tab 1",
+      children: question,
+    },
+    {
+      key: "2",
+      label: "Tab 2",
+      children: "Content of Tab Pane 2",
+    },
+    {
+      key: "3",
+      label: "Tab 3",
+      children: "Content of Tab Pane 3",
+    },
+  ];
+
+  return (
+    <Layout className="mainLayout">
+      <Row className="mobile-row">
+        <Col xs={24} md={12} lg={12} className="left-side-area">
+          <div className="container">
+            {/* <div className="tabs-item">
+              <Button
+                style={{ background: "#0056b3", color: "white" }}
+                type="primary"
+                onClick={() => setTabs("tab1")}
+              >
+                Tab 1
+              </Button>
+              <Button
+                style={{ background: "#0056b3", color: "white" }}
+                type="primary"
+                onClick={() => setTabs("tab2")}
+              >
+                Tab 2
+              </Button>
+            </div> */}
+
+            <Tabs
+              defaultActiveKey="1"
+              items={items}
+              onChange={onChange}
+              indicator={{
+                size: (origin) => origin - 20,
+                align: alignValue,
+              }}
+            />
+
+            {/* {tabs === "tab1" ? (
+              <div className="question-area">
+                <h4>
+                  <span>{currentQuestionIndex + 1} - </span>Question Start
+                </h4>
+                <p className="question-tag">{question}</p>
+              </div>
+            ) : (
+              <div className="question-area">
+                <h4>Question Start</h4>
+                <p className="question-tag">{question}</p>
+              </div>
+            )} */}
+          </div>
+        </Col>
+        <Col
+          xs={24}
+          md={12}
+          lg={12}
+          className="col-left-border right-side-area"
+        >
+          <div className="container">
+            <p className="" style={{ marginBottom: "10px" }}>
+              {question}
+            </p>
+            <table>
+              <thead>
+                <tr>
+                  {options[0].choices.map((choice, colIndex) => (
+                    <th key={colIndex}>{choice}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {options.map((item, rowIndex) => (
+                  <tr key={rowIndex}>
+                    <td>{item.question}</td>
+                    {item.choices.slice(1).map((choice, colIndex) => (
+                      <td key={colIndex}>
+                        <Radio.Group
+                          onChange={(e) =>
+                            handleOptionChange(rowIndex, e.target.value)
+                          }
+                          value={answers[rowIndex]}
+                        >
+                          <Radio value={choice}>{choice}</Radio>
+                        </Radio.Group>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="next-submit">
+              {currentQuestionIndex > 0 && (
+                <Button onClick={handlePreviousQuestion}>Back</Button>
+              )}
+              <Button
+                onClick={handleNextClick}
+                style={{ background: "#0056b3", color: "white" }}
+                type="primary"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        </Col>
+      </Row>
+    </Layout>
+  );
+};
+
+export default MatrixMultipleChoiceQuestion;
+
+
+
+
+
+// import { Button, Checkbox, Col, Layout, Row } from "antd";
+// import React, { useState } from "react";
+
+// const MultipleResponseSelectApplyQuestion = ({
+//   question,
+//   options,
+//   correctAnswers,
+//   finalpart,
+//   onAnswerSelected,
+//   currentQuestionIndex,
+//   handlePreviousQuestion,
+// }) => {
+//   const [selectedOptions, setSelectedOptions] = useState([]);
+//   const [showResult, setShowResult] = useState(false);
+//   const [isCorrect, setIsCorrect] = useState(false);
+//   const [error, setError] = useState("");
+
+//   const handleOptionChange = (option) => {
+//     setSelectedOptions((prev) =>
+//       prev.includes(option)
+//         ? prev.filter((o) => o !== option)
+//         : [...prev, option]
+//     );
+//   };
+
+//   const handleSubmit = (e) => {
+//     console.log(selectedOptions);
+//     e.preventDefault();
+//     if (selectedOptions.length < 3) {
+//       alert("Please select at least 3 options.");
+//       setError("Please select at least 3 options.");
+//       return false;
+//     }
+
+//     onAnswerSelected(selectedOptions);
+
+//     // setShowResult(true);
+//     // const isAnswerCorrect =
+//     //   selectedOptions.length === correctAnswers.length &&
+//     //   selectedOptions.every((option) => correctAnswers.includes(option));
+//   };
+
+//   return (
+//     <Layout>
+//       <div className="container">
+//         <div className="multiple-response-container">
+//           <div className="border-item">
+//             <p className="question-tag">
+//               <span>{currentQuestionIndex + 1} - </span>
+//               {question}
+//             </p>
+//             <span className="error">({finalpart})</span>
+//           </div>
+//           <form onSubmit={handleSubmit}>
+//             <Row>
+//               {options.map((option, index) => (
+//                 <Col span={12}>
+//                   <div className="check-box-mult">
+//                     <Checkbox
+//                       key={index}
+//                       value={option?.id}
+//                       checked={selectedOptions.includes(option?.id)}
+//                       onChange={() => handleOptionChange(option?.id)}
+//                     >
+//                       {option?.option_text}
+//                     </Checkbox>
+//                   </div>
+//                 </Col>
+//               ))}
+//             </Row>
+//             <div className="next-submit">
+//               {currentQuestionIndex > 0 && (
+//                 <Button onClick={handlePreviousQuestion}>Back</Button>
+//               )}
+//               <Button
+//                 style={{ background: "#0056b3", color: "white" }}
+//                 htmlType="submit"
+//                 type="primary"
+//                 className="submit-butto"
+//               >
+//                 Submit
+//               </Button>
+//             </div>
+//           </form>
+//           {/* {showResult && (
+//         <div
+//           className={`result-message ${isCorrect ? "correct" : "incorrect"}`}
+//         >
+//           {isCorrect ? "Correct!" : "Incorrect, try again."}
+//         </div>
+//       )} */}
+//         </div>
+//       </div>
+//     </Layout>
+//   );
+// };
+
+// export default MultipleResponseSelectApplyQuestion;
+
+
+
+import { Button, Layout } from "antd";
+import React, { useState, useEffect } from "react";
+
+const MultipleChoiceQuestion = ({
+  question,
+  options,
+  onAnswerSelected,
+  currentQuestionIndex,
+  handlePreviousQuestion,
+  savedAnswer, // Add a new prop to pass the saved answer for this question
+}) => {
+  const [selectedOption, setSelectedOption] = useState(savedAnswer || null); // Initialize with saved answer
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  useEffect(() => {
+    setSelectedOption(savedAnswer || null);
+    setSelectedItem(
+      options.findIndex((option) => option.id === savedAnswer) || null
+    );
+  }, [savedAnswer, options]);
+
+  const handleOptionClick = (option, index) => {
+    setSelectedOption(option);
+    setSelectedItem(index);
+  };
+
+  const handleSubmit = () => {
+    if (selectedOption) {
+      onAnswerSelected(selectedOption);
+    } else {
+      alert("Please select an option before submitting.");
+    }
+  };
+
+  return (
+    <Layout>
+      <div className="container">
+        <div className="multiple-choice-container">
+          <p className="font-semibold text-[10px] mb-3 text-[#C6C2C2]">
+            Select an answer
+          </p>
+          <p className="question-tag">
+            <span>{currentQuestionIndex + 1} - </span>
+            {question}
+          </p>
+          <ul className="options-list list-item">
+            {options.map((option, index) => (
+              <li key={index} className="option-item">
+                <button
+                  onClick={() => handleOptionClick(option?.id, index)}
+                  className={`option-button ${
+                    selectedItem === index && "activeItem"
+                  }`}
+                >
+                  <span className="question-number">
+                    {String.fromCharCode(65 + index)}
+                  </span>
+                  <span> {option?.option_text}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="next-submit">
+            {/* {currentQuestionIndex > 0 && (
+              <Button onClick={handlePreviousQuestion}>Back</Button>
+            )} */}
+
+            {currentQuestionIndex > 0 && (
+              <button
+                onClick={handlePreviousQuestion}
+                className={`animation-btn-back`}
+              >
+                Back
+              </button>
+            )}
+
+            {/* <Button
+              type="primary"
+              style={{ background: "#0056b3", color: "white" }}
+              onClick={handleSubmit}
+            >
+              Next
+            </Button> */}
+            <button
+              onClick={handleSubmit}
+              className={`animation-btn ${
+                selectedOption && "animation-btn-active"
+              }`}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+};
+
+export default MultipleChoiceQuestion;
+
+
+
+// import { Button, Col, Layout, Row, Radio, Segmented, Tabs } from "antd";
+// import React, { useEffect, useState } from "react";
+// import parse, { domToReact } from "html-react-parser";
+
+// const MatrixMultipleChoiceQuestion = ({
+//   question,
+//   options,
+//   onAnswerSelected,
+//   currentQuestionIndex,
+//   handlePreviousQuestion,
+//   savedAnswers, // Add a new prop to pass the saved answers for this question
+//   finalpart,
+// }) => {
+//   const [tabs, setTabs] = useState("tab1");
+//   const [answers, setAnswers] = useState(savedAnswers || []); // Initialize with saved answers
+//   const [isMobile, setIsMobile] = useState(window.innerWidth <= 780);
+//   const [alignValue, setAlignValue] = React.useState("center");
+//   const [selectedItem, setSelectedItem] = useState(null);
+
+//   const handleOptionChange = (rowIndex, value, question) => {
+//     const newAnswers = [...answers];
+//     // newAnswers[rowIndex] = value; // Store only the selected value for each row
+//     newAnswers[rowIndex] = { question: question, option: value };
+//     setAnswers(newAnswers);
+//     setSelectedItem(newAnswers);
+//   };
+
+ 
+
+//   const handleNextClick = () => {
+//     onAnswerSelected(answers);
+//   };
+
+//   useEffect(() => {
+//     const handleResize = () => {
+//       setIsMobile(window.innerWidth <= 780);
+//     };
+
+//     window.addEventListener("resize", handleResize);
+//     return () => window.removeEventListener("resize", handleResize);
+//   }, []);
+
+//   useEffect(() => {
+//     setAnswers(savedAnswers || []);
+//   }, [savedAnswers]);
+
+//   const optionsToRemovePTags = {
+//     replace: ({ name, children }) => {
+//       if (name === "p") {
+//         return <>{domToReact(children)}</>;
+//       }
+//     },
+//   };
+//   // tabs
+//   const onChange = (key) => {
+//     console.log(key);
+//   };
+//   const items = [
+//     {
+//       key: "1",
+//       label: "Tab 1",
+//       children: parse(question, optionsToRemovePTags),
+//     },
+//     {
+//       key: "2",
+//       label: "Tab 2",
+//       children: "Content of Tab Pane 2",
+//     },
+//     {
+//       key: "3",
+//       label: "Tab 3",
+//       children: "Content of Tab Pane 3",
+//     },
+//   ];
+//   console.log("ites", savedAnswers);
+//   return (
+//     <Layout className="mainLayout">
+//       <Row className="mobile-row">
+//         {finalpart && (
+//           <Col xs={24} md={12} lg={12} className="left-side-area">
+//             <div className="container">
+//               {/* <div className="tabs-item">
+//       <Button
+//         style={{ background: "#0056b3", color: "white" }}
+//         type="primary"
+//         onClick={() => setTabs("tab1")}
+//       >
+//         Tab 1
+//       </Button>
+//       <Button
+//         style={{ background: "#0056b3", color: "white" }}
+//         type="primary"
+//         onClick={() => setTabs("tab2")}
+//       >
+//         Tab 2
+//       </Button>
+//     </div> */}
+
+//               <Tabs
+//                 defaultActiveKey="1"
+//                 items={items}
+//                 onChange={onChange}
+//                 indicator={{
+//                   size: (origin) => origin - 20,
+//                   align: alignValue,
+//                 }}
+//               />
+//             </div>
+//           </Col>
+//         )}
+
+//         <Col
+//           xs={24}
+//           md={12}
+//           lg={finalpart ? 12 : 24}
+//           className="col-left-border right-side-area"
+//         >
+//           <div className="container">
+//             <p className="" style={{ marginBottom: "10px" }}>
+//               <span>{currentQuestionIndex + 1} - </span>
+//               {parse(question, optionsToRemovePTags)}
+//             </p>
+//             <table>
+//               <thead>
+//                 <tr>
+//                   {options[0].choices.map((choice, colIndex) => (
+//                     <th key={colIndex}>{choice?.header}</th>
+//                   ))}
+//                 </tr>
+//               </thead>
+//               <tbody>
+//                 {options.map((item, rowIndex) => (
+//                   <tr key={rowIndex}>
+//                     <td>{item.question}</td>
+//                     {item.choices.slice(1).map((choice, colIndex) => (
+//                       <td key={colIndex}>
+//                         <Radio.Group
+//                           // onChange={(e) =>
+//                           //   handleOptionChange(
+//                           //     rowIndex,
+//                           //     e.target.value,
+//                           //     item.question
+//                           //   )
+//                           // }
+//                           onChange={(e) =>
+//                             handleOptionChange(rowIndex, e.target.value, item.question) // Pass the question text
+//                           }
+//                           value={answers[rowIndex]?.option}
+//                         >
+//                           <Radio value={choice?.id}></Radio>
+//                         </Radio.Group>
+//                       </td>
+//                     ))}
+//                   </tr>
+//                 ))}
+//               </tbody>
+//             </table>
+
+//             <div className="next-submit">
+//               {currentQuestionIndex > 0 && (
+//                 <button
+//                   onClick={handlePreviousQuestion}
+//                   className={`animation-btn-back`}
+//                 >
+//                   Back
+//                 </button>
+//               )}
+
+//               <button
+//                 onClick={handleNextClick}
+//                 className={`animation-btn ${
+//                   answers.length !== 0 && "animation-btn-active"
+//                 }`}
+//               >
+//                 Next
+//               </button>
+//             </div>
+//           </div>
+//         </Col>
+//       </Row>
+//     </Layout>
+//   );
+// };
+
+// export default MatrixMultipleChoiceQuestion;
+
+
+import React, { useEffect, useState } from "react";
+import { Col, Layout, Radio, Row, Tabs } from "antd";
+import parse, { domToReact } from "html-react-parser";
+
+const MatrixMultipleChoiceQuestion = ({
+  question,
+  options,
+  onAnswerSelected,
+  currentQuestionIndex,
+  handlePreviousQuestion,
+  savedAnswers,
+  finalpart,
+}) => {
+  const [answers, setAnswers] = useState(savedAnswers || []);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 780);
+  const [alignValue, setAlignValue] = useState("center");
+
+  console.log();
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 780);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const handleOptionChange = (rowIndex, value, questionText) => {
+    const newAnswers = [...answers];
+    newAnswers[rowIndex] = { question: questionText, option: value };
+    setAnswers(newAnswers);
+  };
+
+  const handleNextClick = () => {
+    onAnswerSelected(answers);
+  };
+
+  const optionsToRemovePTags = {
+    replace: ({ name, children }) => {
+      if (name === "p") {
+        return <>{domToReact(children)}</>;
+      }
+    },
+  };
+
+  const items = [
+    {
+      key: "1",
+      label: "Tab 1",
+      children: parse(question, optionsToRemovePTags),
+    },
+    {
+      key: "2",
+      label: "Tab 2",
+      children: "Content of Tab Pane 2",
+    },
+    {
+      key: "3",
+      label: "Tab 3",
+      children: "Content of Tab Pane 3",
+    },
+  ];
+
+  const onChange = (key) => {
+    console.log(key);
+  };
+
+  return (
+    <Layout className="mainLayout">
+      <Row className="mobile-row">
+        {finalpart && (
+          <Col xs={24} md={12} lg={12} className="left-side-area">
+            <div className="container">
+              <Tabs defaultActiveKey="1" onChange={onChange}>
+                {items.map((item) => (
+                  <Tabs.TabPane key={item.key} tab={item.label}>
+                    {item.children}
+                  </Tabs.TabPane>
+                ))}
+              </Tabs>
+            </div>
+          </Col>
+        )}
+
+        <Col
+          xs={24}
+          md={12}
+          lg={finalpart ? 12 : 24}
+          className="col-left-border right-side-area"
+        >
+          <div className="container">
+            <p style={{ marginBottom: "10px" }}>
+              <span>{currentQuestionIndex + 1} - </span>
+              {parse(question, optionsToRemovePTags)}
+            </p>
+            <table>
+              <thead>
+                <tr>
+                  {options[0].choices.map((choice, colIndex) => (
+                    <th key={colIndex}>{choice.header}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {options.map((item, rowIndex) => (
+                  <tr key={rowIndex}>
+                    <td>{item.question}</td>
+                    {item.choices.slice(1).map((choice, colIndex) => (
+                      <td key={colIndex}>
+                        <Radio.Group
+                          onChange={(e) =>
+                            handleOptionChange(
+                              rowIndex,
+                              e.target.value,
+                              item.question
+                            )
+                          }
+                          value={answers[rowIndex]?.option}
+                        >
+                          <Radio value={choice.id}></Radio>
+                        </Radio.Group>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="next-submit">
+              {currentQuestionIndex > 0 && (
+                <button
+                  onClick={handlePreviousQuestion}
+                  className="animation-btn-back"
+                >
+                  Back
+                </button>
+              )}
+
+              <button
+                onClick={handleNextClick}
+                className={`animation-btn ${
+                  answers.length !== 0 && "animation-btn-active"
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </Col>
+      </Row>
+    </Layout>
+  );
+};
+
+export default MatrixMultipleChoiceQuestion;
+
+
