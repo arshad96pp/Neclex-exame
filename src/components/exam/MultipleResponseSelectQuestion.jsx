@@ -44,9 +44,7 @@ const MultipleResponseSelectQuestion = ({
   };
   // Notify the parent component whenever selectedOptions changes
 
-  console.log("Selected Options:", selectedOptions);
-
-  console.log("QUESTION", question);
+  
 
   const removePTags = (text) => {
     return text.replace(/<\/?p>/g, ""); // Remove <p> and </p> tags
@@ -54,7 +52,7 @@ const MultipleResponseSelectQuestion = ({
 
   return (
     <div>
-      <div className="mb-5">
+      <div className="mb-5 ">
         <p>{question?.question}</p>
       </div>
 

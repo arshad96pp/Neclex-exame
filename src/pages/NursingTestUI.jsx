@@ -200,7 +200,6 @@ const NursingTestUI = () => {
 
   const currentQuestion = exam?.questions[currentIndex];
 
-
   const onFinsh = async () => {
     const transformAnswers = (responses) => {
       return Object.keys(responses)
@@ -273,7 +272,7 @@ const NursingTestUI = () => {
             className={`${
               next === currentQuestion?.id ? "w-full lg:w-1/2" : "w-full"
             }  p-3 lg:p-6 `}
-            style={isMobile ? {} : { maxHeight: "500px", overflowY: "auto" }}
+            style={isMobile ? {} : { maxHeight: "600px", overflowY: "auto" }}
           >
             <div>{renderQuestion(currentQuestion)}</div>
           </div>
@@ -282,7 +281,7 @@ const NursingTestUI = () => {
           {next === currentQuestion?.id && (
             <div
               className="w-full lg:w-1/2 p-6 border-l "
-              style={isMobile ? {} : { maxHeight: "500px", overflowY: "auto" }}
+              style={isMobile ? {} : { maxHeight: "600px", overflowY: "auto" }}
             >
               <h2 className="font-bold mb-2">Explanation</h2>
               <p
@@ -300,7 +299,7 @@ const NursingTestUI = () => {
           <div className="flex justify-start items-center gap-2">
             {isMobile ? (
               <div onClick={() => setEndExamModal(true)}>
-                <PauseCircleIcon />
+                <ReplyAllIcon />
               </div>
             ) : (
               <Button

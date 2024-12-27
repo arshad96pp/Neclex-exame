@@ -3,6 +3,10 @@ import { Radio, Button } from "antd";
 import DOMPurify from "dompurify";
 import { CheckCircleOutlined } from "@ant-design/icons";
 
+import BookmarkAddedRoundedIcon from "@mui/icons-material/BookmarkAddedRounded";
+import CreateRoundedIcon from "@mui/icons-material/CreateRounded";
+import WatchLaterRoundedIcon from "@mui/icons-material/WatchLaterRounded";
+
 const MultipleChoiceQuestion = ({
   question,
   selectedValue,
@@ -10,6 +14,7 @@ const MultipleChoiceQuestion = ({
   config,
 }) => {
   const { setNext, next } = config;
+  
 
   // Function to sanitize and remove <p> tags
   const cleanOptionText = (text) => {
@@ -26,7 +31,7 @@ const MultipleChoiceQuestion = ({
     <div>
       {next === question?.id ? (
         <>
-          <div className="mb-5">{cleanOptionText(question?.question)}</div>
+          <div className="mb-5 ">{cleanOptionText(question?.question)}</div>
           <div className="pl-0 lg:p-5 mb-4">
             <Radio.Group
               value={
@@ -58,6 +63,48 @@ const MultipleChoiceQuestion = ({
               ))}
             </Radio.Group>
           </div>
+
+          {/* <div className="max-w-[90%] m-auto h-20  grid grid-cols-[1fr_1fr_1fr] shadow-[0px_4px_6px_rgba(0,0,0,0.1)]">
+            <div className="p-2 grid place-items-center">
+              <div>
+                <div className="flex justify-center items-center gap-2">
+                  <span>
+                    <BookmarkAddedRoundedIcon />
+                  </span>
+                  <div>
+                    <p className="text-xs">0/9</p>
+                    <p className="text-xs">Scored max</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="p-2 grid place-items-center">
+              <div>
+                <div className="flex justify-center items-center gap-2">
+                  <span>
+                    <CreateRoundedIcon />
+                  </span>
+                  <div>
+                    <p className="text-xs">0/9 Scoring</p>
+                    <p className="text-xs">Scoring Rule</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="p-2 grid place-items-center">
+              <div>
+                <div className="flex justify-center items-center gap-2">
+                  <span>
+                    <WatchLaterRoundedIcon />
+                  </span>
+                  <div>
+                    <p className="text-xs">02 secs</p>
+                    <p className="text-xs">Time Spend</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div> */}
         </>
       ) : (
         <>
