@@ -197,6 +197,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Table, Radio, Button } from "antd";
+import { submitEachAnswer } from "../../api";
 
 const MatrixMultipleChoiceQuestion = ({
   question,
@@ -204,7 +205,16 @@ const MatrixMultipleChoiceQuestion = ({
   onChange,
   config,
 }) => {
-  const { next, setNext, selectedAnswers, setSelectedAnswers } = config;
+  const {
+    next,
+    setNext,
+    selectedAnswers,
+    setSelectedAnswers,
+    updateReviewList,
+    user_id,
+    exam_id,
+    getAllQuestion,
+  } = config;
 
   const [tabClick, setTabClick] = useState(null);
 
@@ -228,9 +238,28 @@ const MatrixMultipleChoiceQuestion = ({
   };
 
   // Handle button click to auto-select correct answers
-  const handleButtonClick = () => {
-    autoSelectCorrectAnswers(); // Auto-select correct answers
+  const handleButtonClick = async () => {
+    // autoSelectCorrectAnswers(); // Auto-select correct answers
     setNext(question?.id); // Trigger next question logic
+    localStorage.setItem("examReview", question?.id);
+    const dataitem = {
+      user_id: user_id,
+      exam_id: exam_id,
+      question_id: question?.id,
+      selected_answer: selectedValue, // Could be an array for multiple responses
+      question_type: question?.type,
+    };
+
+    try {
+      const response = await submitEachAnswer(dataitem);
+
+      if (response?.status) {
+        getAllQuestion();
+        console.log("responseee", response);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // Handle selection change for each statement
@@ -253,6 +282,12 @@ const MatrixMultipleChoiceQuestion = ({
   useEffect(() => {
     if (question?.question_parts?.length > 0) {
       setTabClick(question.question_parts[0].id); // Automatically click the first tab
+    }
+  }, [question]);
+
+  useEffect(() => {
+    if (question?.is_attended === 1) {
+      autoSelectCorrectAnswers();
     }
   }, [question]);
 
@@ -418,7 +453,7 @@ const MatrixMultipleChoiceQuestion = ({
 
   return (
     <div>
-      <h1 className="mb-5">{question?.question}</h1>
+      <h1 className="mb-5 text-[16px]">{question?.question}</h1>
 
       {question?.question_parts?.length !== 0 && (
         <>
@@ -459,7 +494,7 @@ const MatrixMultipleChoiceQuestion = ({
         </div>
       )}
 
-      {next === question?.id ? (
+      {question?.is_attended === 1 ? (
         <>
           <Table
             columns={columnsSame}

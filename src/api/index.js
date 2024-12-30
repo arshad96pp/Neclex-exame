@@ -19,3 +19,9 @@ export const getQuestionsById = (id) =>
   API.get(
     `https://co-tutorlearning.com/api/Nclex_exam/view_question?question_id=${id}`
   );
+
+export const submitEachAnswer = (data) =>
+  axios.post(
+    `https://co-tutorlearning.com/api/nclex_exam/submit_each_answer`,
+    data
+  );

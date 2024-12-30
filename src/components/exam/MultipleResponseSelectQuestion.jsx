@@ -1,6 +1,7 @@
 import { Button, Checkbox, message } from "antd";
 import React, { useEffect, useState } from "react";
 import { CheckCircleOutlined } from "@ant-design/icons";
+import { submitEachAnswer } from "../../api";
 
 const MultipleResponseSelectQuestion = ({
   question,
@@ -9,7 +10,7 @@ const MultipleResponseSelectQuestion = ({
   config,
 }) => {
   const [selectedOptions, setSelectedOptions] = useState(selectedValue || []); // Initial value can be passed as a prop
-  const { setNext, next } = config;
+  const { setNext, next, user_id, exam_id, getAllQuestion } = config;
 
   const handelChange = (e) => {
     const { value, checked } = e.target;
@@ -44,10 +45,32 @@ const MultipleResponseSelectQuestion = ({
   };
   // Notify the parent component whenever selectedOptions changes
 
-  
-
   const removePTags = (text) => {
     return text.replace(/<\/?p>/g, ""); // Remove <p> and </p> tags
+  };
+
+  const handelReviewClick = async () => {
+    setNext(question?.id);
+    localStorage.setItem("examReview", question?.id);
+
+    const dataitem = {
+      user_id: user_id,
+      exam_id: exam_id,
+      question_id: question?.id,
+      selected_answer: selectedValue, // Could be an array for multiple responses
+      question_type: question?.type,
+    };
+
+    try {
+      const response = await submitEachAnswer(dataitem);
+
+      if (response?.status) {
+        getAllQuestion();
+        console.log("responseee", response);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -58,7 +81,7 @@ const MultipleResponseSelectQuestion = ({
 
       {/* Options Section */}
 
-      {next === question?.id ? (
+      {question?.is_attended === 1 ? (
         <>
           <div>
             <ul className="ml-0 lg:ml-6 mb-5">
@@ -79,7 +102,7 @@ const MultipleResponseSelectQuestion = ({
                     />
                   )}
                   <Checkbox checked={option?.is_correct === "1" && true}>
-                    {removePTags(option?.option_text)}
+                    <p className=""> {removePTags(option?.option_text)}</p>
                   </Checkbox>
                 </li>
               ))}
@@ -89,7 +112,7 @@ const MultipleResponseSelectQuestion = ({
       ) : (
         <>
           <div>
-            <ul className="ml-0 lg:ml-6 mb-5">
+            <ul className="ml-0 lg:ml-6 mb-5 ">
               {question?.options?.map((option) => (
                 <li key={option?.id} className="mb-3">
                   <Checkbox
@@ -97,7 +120,7 @@ const MultipleResponseSelectQuestion = ({
                     checked={selectedOptions.includes(option?.id)} // Track whether the checkbox is checked
                     onChange={(e) => handelChange(e)} // Update selectedOptions on change
                   >
-                    {removePTags(option?.option_text)}
+                    <p className=" ml-2"> {removePTags(option?.option_text)}</p>
                   </Checkbox>
                 </li>
               ))}
@@ -110,7 +133,7 @@ const MultipleResponseSelectQuestion = ({
               style={{ background: "blue", color: "white" }}
               onClick={() => {
                 onChange(selectedOptions);
-                setNext(question?.id);
+                handelReviewClick();
               }}
             >
               Submit

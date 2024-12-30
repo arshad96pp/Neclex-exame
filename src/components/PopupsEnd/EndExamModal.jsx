@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Button } from "antd";
 
-const EndExamModal = ({ config }) => {
+const EndExamModal = ({ config, onFinsh }) => {
   const { endExameModal, setEndExamModal } = config;
   // Show modal
   const showModal = () => {
@@ -9,9 +9,10 @@ const EndExamModal = ({ config }) => {
   };
 
   // Handle modal ok (confirm)
-  const handleOk = () => {
+  const handleOk = async () => {
     // Your suspend or end exam action logic here
     console.log("Exam has been ended.");
+    onFinsh();
     setEndExamModal(false); // Close the modal after confirming
   };
 
@@ -22,8 +23,6 @@ const EndExamModal = ({ config }) => {
 
   return (
     <div>
-   
-
       {/* Ant Design Modal for suspend confirmation */}
       <Modal
         title="End Exam"

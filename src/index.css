@@ -6,10 +6,23 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Poppins";
+  font-family: "Poppins", serif;
+  font-style: normal;
 }
 
-
-html,body{
+html,
+body {
   overflow-x: hidden;
+}
+
+/* Hide scrollbar for all elements */
+html,
+body {
+  scrollbar-width: none; /* For Firefox */
+  -ms-overflow-style: none; /* For Internet Explorer and Edge */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none; /* For Chrome, Safari, and Edge */
 }

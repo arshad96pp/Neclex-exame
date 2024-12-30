@@ -16,16 +16,18 @@ import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PauseCircleIcon from "@mui/icons-material/PauseCircle";
-import { useNavigate } from "react-router-dom";
+import { json, useNavigate } from "react-router-dom";
 import CalculatorModal from "../components/CalculatorModal/CalculatorModal";
 import ReplyAllIcon from "@mui/icons-material/ReplyAll";
 import SuspendPopup from "../components/PopupsEnd/SuspendPopup";
 import EndExamModal from "../components/PopupsEnd/EndExamModal";
 
-const NursingTestUI = () => {
+const NursingTestUI = ({ userId, examId }) => {
   const [next, setNext] = useState(null);
 
-  const [currentIndex, setCurrentIndex] = useState(0); // Track the current question index
+  const [currentIndex, setCurrentIndex] = useState(
+    localStorage.getItem("currentIndex") || 0
+  ); // Track the current question index
   const [responses, setResponses] = useState({}); // Store user responses
   const [exams, setExam] = useState({});
   const { exam } = exams;
@@ -48,8 +50,8 @@ const NursingTestUI = () => {
 
   const navigate = useNavigate();
 
-  let user_id = 4;
-  let exam_id = 3;
+  let user_id = JSON.parse(userId);
+  let exam_id = JSON.parse(examId);
 
   const resizeHandeler = () => {
     setIsMobile(window.innerWidth <= 800);
@@ -60,12 +62,19 @@ const NursingTestUI = () => {
     return () => window.removeEventListener("resize", resizeHandeler);
   }, []);
 
+  const getAllQuestion = async () => {
+    const response = await getQuestions(user_id, exam_id);
+    setExam(response?.data);
+  };
   useEffect(() => {
-    const getAllQuestion = async () => {
-      const response = await getQuestions(user_id, exam_id);
-      setExam(response?.data);
-    };
     getAllQuestion();
+  }, []);
+
+  useEffect(() => {
+    const itemNumber = localStorage.getItem("currentIndex");
+    if (itemNumber !== null) {
+      setCurrentIndex(parseInt(itemNumber, 10)); // Safely parse to number
+    }
   }, []);
 
   const handleAnswerChange = (questionId, value, type) => {
@@ -80,13 +89,21 @@ const NursingTestUI = () => {
 
   const handleNext = () => {
     if (currentIndex < exam?.questions?.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
+      const nextIndex = currentIndex + 1; // Calculate the next index
+      setCurrentIndex(nextIndex);
+
+      // Save the updated index to localStorage
+      localStorage.setItem("currentIndex", nextIndex);
+
+      console.log("EXAM QUESTIONS - Current Index:", nextIndex);
     }
   };
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
-      setCurrentIndex((prev) => prev - 1);
+      const nextIndex = currentIndex - 1; // Calculate the next index
+      setCurrentIndex(nextIndex);
+      localStorage.setItem("currentIndex", nextIndex);
     }
   };
 
@@ -142,40 +159,9 @@ const NursingTestUI = () => {
     enterFullScreen,
     exitFullScreen,
     isFullScreen,
-  };
-
-  const renderQuestion = (question) => {
-    if (!question) return null;
-
-    const { id, type } = question;
-
-    const commonProps = {
-      question,
-      selectedValue: responses[id]?.answer || null,
-      onChange: (value) => handleAnswerChange(id, value, type), // Pass type here
-    };
-
-    switch (type) {
-      case "multiple_choice":
-        return <MultipleChoiceQuestion {...commonProps} config={config} />;
-      case "matrix_multiple_choice":
-        return (
-          <MatrixMultipleChoiceQuestion {...commonProps} config={config} />
-        );
-      case "multiple_response_select":
-        return (
-          <MultipleResponseSelectQuestion {...commonProps} config={config} />
-        );
-      case "multiple_response_select_apply":
-        return (
-          <MultipleResponseSelectApplyQuestion
-            {...commonProps}
-            config={config}
-          />
-        );
-      default:
-        return null;
-    }
+    getAllQuestion,
+    user_id,
+    exam_id,
   };
 
   const handleNoteChange = () => {};
@@ -244,6 +230,7 @@ const NursingTestUI = () => {
       );
       if (response?.data?.status) {
         message.success(response?.data?.message);
+        localStorage.removeItem("currentIndex");
         navigate("/result");
       }
     } catch (error) {
@@ -252,6 +239,40 @@ const NursingTestUI = () => {
   };
 
   // console.log("ITTTTTTT", currentQuestion);
+
+  const renderQuestion = (question) => {
+    if (!question) return null;
+
+    const { id, type } = question;
+
+    const commonProps = {
+      question,
+      selectedValue: responses[id]?.answer || null,
+      onChange: (value) => handleAnswerChange(id, value, type), // Pass type here
+    };
+
+    switch (type) {
+      case "multiple_choice":
+        return <MultipleChoiceQuestion {...commonProps} config={config} />;
+      case "matrix_multiple_choice":
+        return (
+          <MatrixMultipleChoiceQuestion {...commonProps} config={config} />
+        );
+      case "multiple_response_select":
+        return (
+          <MultipleResponseSelectQuestion {...commonProps} config={config} />
+        );
+      case "multiple_response_select_apply":
+        return (
+          <MultipleResponseSelectApplyQuestion
+            {...commonProps}
+            config={config}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   const sanitizedHtml = DOMPurify.sanitize(currentQuestion?.explanation);
 
@@ -264,21 +285,25 @@ const NursingTestUI = () => {
         {/* Main Content */}
         <div
           className={`flex  ${
-            next ? "flex-col lg:flex-row" : "flex-col"
-          } bg-white text-black rounded-lg`}
+            currentQuestion?.is_attended === 1
+              ? "flex-col lg:flex-row"
+              : "flex-col"
+          }  text-black rounded-lg`}
         >
           {/* Question Section */}
           <div
             className={`${
-              next === currentQuestion?.id ? "w-full lg:w-1/2" : "w-full"
-            }  p-3 lg:p-6 `}
+              currentQuestion?.is_attended === 1 ? "w-full lg:w-1/2" : "w-full"
+            }  p-3 pr-0  ${
+              currentQuestion?.is_attended === 1 ? "" : "lg:pr-60"
+            } lg:p-6   `}
             style={isMobile ? {} : { maxHeight: "600px", overflowY: "auto" }}
           >
             <div>{renderQuestion(currentQuestion)}</div>
           </div>
 
           {/* Result Section */}
-          {next === currentQuestion?.id && (
+          {currentQuestion?.is_attended === 1 && (
             <div
               className="w-full lg:w-1/2 p-6 border-l "
               style={isMobile ? {} : { maxHeight: "600px", overflowY: "auto" }}
@@ -418,7 +443,7 @@ const NursingTestUI = () => {
       />
 
       <SuspendPopup config={config} />
-      <EndExamModal config={config} />
+      <EndExamModal config={config} onFinsh={onFinsh} />
     </>
   );
 };

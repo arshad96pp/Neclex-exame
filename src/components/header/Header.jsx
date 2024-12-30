@@ -42,7 +42,7 @@ const Header = ({ config }) => {
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between p-2 px-4 bg-blue-900 text-white">
+      <div className="flex flex-wrap items-center justify-between p-1 px-4 bg-blue-900 text-white ">
         {/* Left Section */}
         <div className="w-full sm:w-auto mb-4 sm:mb-0 text-left">
           <h1 className="text-lg font-bold">NCLEX-RN TEST - TONY ALEX</h1>
@@ -58,19 +58,21 @@ const Header = ({ config }) => {
         <div className="flex flex-wrap gap-2 justify-start sm:justify-end w-full sm:w-auto">
           <div>
             <div className="flex justify-start items-center gap-2 mb-1">
-              <h4>Time</h4>
-              <span>
+              <h4 className="text-sm">Time</h4>
+              <span className="text-sm">
                 <AccessAlarmsRoundedIcon />
               </span>
-              <h4>{formatTime(time)}</h4>
+              <h4 className="text-sm">{formatTime(time)}</h4>
             </div>
 
             <div className="flex justify-start items-center gap-2">
-              <h4>Question</h4>
-              <span>
+              <h4 className="text-sm">Question</h4>
+              <span className="text-sm">
                 <HelpRoundedIcon />
               </span>
-              <h4>{`${currentIndex + 1} of ${exam?.questions?.length}`}</h4>
+              <h4 className="text-sm">{`${currentIndex + 1} of ${
+                exam?.questions?.length
+              }`}</h4>
             </div>
           </div>
         </div>

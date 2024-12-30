@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Checkbox, Button } from "antd";
 import { CheckCircleOutlined } from "@ant-design/icons";
+import { submitEachAnswer } from "../../api";
 
 const MultipleResponseSelectApplyQuestion = ({
   question,
@@ -10,7 +11,7 @@ const MultipleResponseSelectApplyQuestion = ({
 }) => {
   // Use state to keep track of selected options
   const [selectedOptions, setSelectedOptions] = useState(selectedValue || []); // Initial value can be passed as a prop
-  const { setNext, next } = config;
+  const { setNext, next, user_id, exam_id, getAllQuestion } = config;
 
   const handelChange = (e) => {
     const { value, checked } = e.target;
@@ -35,6 +36,30 @@ const MultipleResponseSelectApplyQuestion = ({
     return text.replace(/<\/?p>/g, ""); // Remove <p> and </p> tags
   };
 
+  const handelReviewClick = async () => {
+    setNext(question?.id);
+    localStorage.setItem("examReview", question?.id);
+
+    const dataitem = {
+      user_id: user_id,
+      exam_id: exam_id,
+      question_id: question?.id,
+      selected_answer: selectedValue, // Could be an array for multiple responses
+      question_type: question?.type,
+    };
+
+    try {
+      const response = await submitEachAnswer(dataitem);
+
+      if (response?.status) {
+        getAllQuestion();
+        console.log("responseee", response);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div>
       <div>
@@ -42,7 +67,7 @@ const MultipleResponseSelectApplyQuestion = ({
         <div className="mb-5">
           <p>{question?.question}</p>
         </div>
-        {next === question?.id ? (
+        {question?.is_attended === 1 ? (
           <>
             {/* Options Section */}
             <div>
@@ -86,7 +111,7 @@ const MultipleResponseSelectApplyQuestion = ({
                       checked={selectedOptions.includes(option?.id)} // Track whether the checkbox is checked
                       onChange={handelChange} // Update selectedOptions on change
                     >
-                      {removePTags(option?.option_text)}
+                      <p> {removePTags(option?.option_text)}</p>
                     </Checkbox>
                   </li>
                 ))}
@@ -99,7 +124,7 @@ const MultipleResponseSelectApplyQuestion = ({
                 style={{ background: "blue", color: "white" }}
                 onClick={() => {
                   onChange(selectedOptions);
-                  setNext(question?.id);
+                  handelReviewClick();
                 }}
               >
                 Submit
