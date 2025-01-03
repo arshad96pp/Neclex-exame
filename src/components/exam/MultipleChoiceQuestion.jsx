@@ -1,7 +1,7 @@
 import React from "react";
 import { Radio, Button } from "antd";
 import DOMPurify from "dompurify";
-import { CheckCircleOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 
 import BookmarkAddedRoundedIcon from "@mui/icons-material/BookmarkAddedRounded";
 import CreateRoundedIcon from "@mui/icons-material/CreateRounded";
@@ -34,7 +34,7 @@ const MultipleChoiceQuestion = ({
       user_id: user_id,
       exam_id: exam_id,
       question_id: question?.id,
-      selected_answer: selectedValue, // Could be an array for multiple responses
+      selected_answer: selectedValue === null ? [] : selectedValue, // Could be an array for multiple responses
       question_type: question?.type,
     };
 
@@ -65,26 +65,31 @@ const MultipleChoiceQuestion = ({
           </div>
           <div className="pl-0 lg:p-5 mb-4">
             <Radio.Group
-              value={
-                question?.options?.find((item) => item?.is_correct === "1")?.id
-              }
+              value={question?.selected_answer?.[0]} // Track the first selected answer (if there are multiple, we'll handle them)
+              onChange={(e) => {
+                // Logic to handle the Radio button changes if needed
+              }}
             >
               {question?.options?.map((item, index) => (
                 <div key={index} className="flex items-center mb-4">
-                  {/* Tick Icon before the radio button */}
-
-                  {item?.is_correct === "1" ? (
+                  {/* Correct Answer Icon */}
+                  {item?.is_correct === "1" && (
                     <CheckCircleOutlined
-                      className="text-green-500 mr-2" // Customize the color
-                      style={{ fontSize: "18px" }} // Customize the size of the icon
-                    />
-                  ) : (
-                    <CheckCircleOutlined
-                      className="text-green-500 mr-2" // Customize the color
-                      style={{ fontSize: "18px", opacity: "0" }} // Customize the size of the icon
+                      className="text-green-500 mr-2"
+                      style={{ fontSize: "18px" }}
                     />
                   )}
 
+                  {/* Incorrect Answer Icon (shown if selected) */}
+                  {question?.selected_answer?.includes(item?.id) &&
+                    item?.is_correct !== "1" && (
+                      <CloseCircleOutlined
+                        className="text-red-600 mr-2"
+                        style={{ fontSize: "18px" }}
+                      />
+                    )}
+
+                  {/* Radio button */}
                   <Radio value={item?.id} className="flex items-center">
                     <p className="text-[16px] ml-2">
                       {cleanOptionText(item?.option_text)}
@@ -95,7 +100,7 @@ const MultipleChoiceQuestion = ({
             </Radio.Group>
           </div>
 
-          {/* <div className="max-w-[90%] m-auto h-20  grid grid-cols-[1fr_1fr_1fr] shadow-[0px_4px_6px_rgba(0,0,0,0.1)]">
+          <div className="max-w-[90%] m-auto h-20 bg-[#f3f3f354]  grid grid-cols-[1fr_1fr] shadow-[0px_4px_6px_rgba(0,0,0,0.1)]">
             <div className="p-2 grid place-items-center">
               <div>
                 <div className="flex justify-center items-center gap-2">
@@ -109,7 +114,7 @@ const MultipleChoiceQuestion = ({
                 </div>
               </div>
             </div>
-            <div className="p-2 grid place-items-center">
+            {/* <div className="p-2 grid place-items-center">
               <div>
                 <div className="flex justify-center items-center gap-2">
                   <span>
@@ -121,7 +126,7 @@ const MultipleChoiceQuestion = ({
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
             <div className="p-2 grid place-items-center">
               <div>
                 <div className="flex justify-center items-center gap-2">
@@ -135,7 +140,7 @@ const MultipleChoiceQuestion = ({
                 </div>
               </div>
             </div>
-          </div> */}
+          </div>
         </>
       ) : (
         <>

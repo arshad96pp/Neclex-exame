@@ -231,7 +231,10 @@ const NursingTestUI = ({ userId, examId }) => {
       if (response?.data?.status) {
         message.success(response?.data?.message);
         localStorage.removeItem("currentIndex");
-        navigate("/result");
+        // navigate("/result");
+        window.location.replace(
+          `https://co-tutorlearning.com/app/result/get_exam_result_get/?user_id=${user_id}&exam_id=${exam_id}`
+        );
       }
     } catch (error) {
       console.error("Something went wrong:", error);
@@ -280,7 +283,7 @@ const NursingTestUI = ({ userId, examId }) => {
     <>
       <div className="text-white min-h-screen flex flex-col">
         {/* Header Section */}
-        <Header config={config} />
+        <Header config={config} currentQuestion={currentQuestion} />
 
         {/* Main Content */}
         <div

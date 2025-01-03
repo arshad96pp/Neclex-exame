@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Checkbox, Button } from "antd";
-import { CheckCircleOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
+
 import { submitEachAnswer } from "../../api";
+import BookmarkAddedRoundedIcon from "@mui/icons-material/BookmarkAddedRounded";
+import CreateRoundedIcon from "@mui/icons-material/CreateRounded";
+import WatchLaterRoundedIcon from "@mui/icons-material/WatchLaterRounded";
 
 const MultipleResponseSelectApplyQuestion = ({
   question,
@@ -44,7 +48,7 @@ const MultipleResponseSelectApplyQuestion = ({
       user_id: user_id,
       exam_id: exam_id,
       question_id: question?.id,
-      selected_answer: selectedValue, // Could be an array for multiple responses
+      selected_answer: selectedValue === null ? [] : selectedValue, // Could be an array for multiple responses
       question_type: question?.type,
     };
 
@@ -59,6 +63,8 @@ const MultipleResponseSelectApplyQuestion = ({
       console.log(error);
     }
   };
+
+  console.log("MY DATA", question);
 
   return (
     <div>
@@ -75,22 +81,29 @@ const MultipleResponseSelectApplyQuestion = ({
                 {question?.options?.map((option) => (
                   <li
                     key={option}
-                    className="mb-3 flex justify-start items-center gap-1"
+                    className="mb-3 flex items-center gap-2" // Adjust gap for better alignment
                   >
-                    {option?.is_correct === "1" ? (
+                    {/* Correct Answer Icon */}
+                    {option?.is_correct === "1" && (
                       <CheckCircleOutlined
-                        className="text-green-500 mr-2" // Customize the color
-                        style={{ fontSize: "18px" }} // Customize the size of the icon
-                      />
-                    ) : (
-                      <CheckCircleOutlined
-                        className="text-green-500 mr-2" // Customize the color
-                        style={{ fontSize: "18px", opacity: "0" }} // Customize the size of the icon
+                        className="text-green-500 mr-2"
+                        style={{ fontSize: "18px" }}
                       />
                     )}
 
+                    {/* Incorrect Answer Icon */}
+                    {question?.selected_answer?.includes(option?.id) &&
+                      option?.is_correct !== "1" && (
+                        <CloseCircleOutlined
+                          className="text-red-600 mr-2"
+                          style={{ fontSize: "18px" }}
+                        />
+                      )}
+
+                    {/* Checkbox */}
                     <Checkbox
-                      checked={option?.is_correct === "1" && true} // Track whether the checkbox is checked
+                      checked={option?.is_correct === "1"} // Track whether the checkbox is checked
+                      className="flex items-center"
                     >
                       {removePTags(option?.option_text)}
                     </Checkbox>
@@ -98,6 +111,47 @@ const MultipleResponseSelectApplyQuestion = ({
                 ))}
               </ul>
             </div>
+            <div className="max-w-[90%] mt-9 m-auto h-20 bg-[#f3f3f354]  grid grid-cols-[1fr_1fr] shadow-[0px_4px_6px_rgba(0,0,0,0.1)]">
+            <div className="p-2 grid place-items-center">
+              <div>
+                <div className="flex justify-center items-center gap-2">
+                  <span>
+                    <BookmarkAddedRoundedIcon />
+                  </span>
+                  <div>
+                    <p className="text-xs">0/9</p>
+                    <p className="text-xs">Scored max</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* <div className="p-2 grid place-items-center">
+              <div>
+                <div className="flex justify-center items-center gap-2">
+                  <span>
+                    <CreateRoundedIcon />
+                  </span>
+                  <div>
+                    <p className="text-xs">0/9 Scoring</p>
+                    <p className="text-xs">Scoring Rule</p>
+                  </div>
+                </div>
+              </div>
+            </div> */}
+            <div className="p-2 grid place-items-center">
+              <div>
+                <div className="flex justify-center items-center gap-2">
+                  <span>
+                    <WatchLaterRoundedIcon />
+                  </span>
+                  <div>
+                    <p className="text-xs">02 secs</p>
+                    <p className="text-xs">Time Spend</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           </>
         ) : (
           <>

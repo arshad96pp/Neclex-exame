@@ -5,7 +5,7 @@ import HelpRoundedIcon from "@mui/icons-material/HelpRounded";
 import FullscreenRoundedIcon from "@mui/icons-material/FullscreenRounded";
 import FullscreenExitRoundedIcon from "@mui/icons-material/FullscreenExitRounded";
 
-const Header = ({ config }) => {
+const Header = ({ config, currentQuestion }) => {
   const {
     setTextModal,
     setFeedBackModal,
@@ -18,16 +18,16 @@ const Header = ({ config }) => {
     isFullScreen,
   } = config;
 
-  const [time, setTime] = useState(180); // Time in seconds (3 minutes)
+  const [time, setTime] = useState(0); // Start from 0 seconds
 
   useEffect(() => {
     const interval = setInterval(() => {
       setTime((prevTime) => {
-        if (prevTime <= 1) {
-          clearInterval(interval); // Stop the timer when it reaches 0
-          return 0;
+        if (prevTime >= 180) { // Stop the timer when it reaches 3 minutes
+          clearInterval(interval);
+          return prevTime;
         }
-        return prevTime - 1;
+        return prevTime + 1; // Increment time by 1 second
       });
     }, 1000); // Update the time every second
 
@@ -39,7 +39,6 @@ const Header = ({ config }) => {
     const seconds = timeInSeconds % 60;
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
-
   return (
     <>
       <div className="flex flex-wrap items-center justify-between p-1 px-4 bg-blue-900 text-white ">
@@ -49,9 +48,9 @@ const Header = ({ config }) => {
         </div>
 
         {/* Middle Section (Hidden on smaller screens) */}
-        <div className="w-full sm:w-auto mb-4 sm:mb-0 hidden lg:flex flex-col sm:flex-row gap-1">
-          <p className="text-sm">Test Id: 370626716 (Tutored, Untimed)</p>
-          <p className="text-sm">QId: 31736 (5031545)</p>
+        <div className="w-full sm:w-auto mb-4 sm:mb-0 hidden lg:flex flex-col sm:flex-row gap-3">
+          <p className="text-sm">{exam?.title}</p>
+          <p className="text-sm">QId: {currentQuestion?.id} </p>
         </div>
 
         {/* Right Section */}

@@ -1,203 +1,9 @@
-// import React, { useEffect, useState } from "react";
-// import { Table, Radio, Button } from "antd";
-
-// const MatrixMultipleChoiceQuestion = ({
-//   question,
-//   selectedValue,
-//   onChange,
-//   config,
-// }) => {
-//   const { setNext, selectedAnswers, setSelectedAnswers } = config;
-
-//   const [tabClick, setTabClick] = useState(null);
-
-//   const autoSelectCorrectAnswers = () => {
-//     if (question?.options?.length > 0) {
-//       const prefilledAnswers = {};
-//       question.options.forEach((option) => {
-//         const correctChoice = option.choices.find(
-//           (choice) => choice.header === option.answer
-//         );
-//         if (correctChoice) {
-//           prefilledAnswers[option.question] = {
-//             value: correctChoice.header,
-//             choiceId: correctChoice.id,
-//           };
-//         }
-//       });
-//       setSelectedAnswers(prefilledAnswers);
-//     }
-//   };
-
-//   // Handle selection change for each statement
-//   const handleSelectionChange = (statement, value, choiceId) => {
-//     const updatedAnswers = {
-//       ...selectedAnswers,
-//       [statement]: { value, choiceId }, // Store the selected value and the id of the choice
-//     };
-//     setSelectedAnswers(updatedAnswers); // Update the local state
-
-//     // Extract choice IDs into an array
-//     const selectedIds = Object.values(updatedAnswers)
-//       .filter((answer) => answer.choiceId) // Ensure valid answers
-//       .map((answer) => answer.choiceId);
-
-//     onChange(selectedIds); // Notify the parent component with the updated IDs array
-//     console.log("Selected choice IDs:", selectedIds); // Log the updated array
-//   };
-
-//   // Set initial tabClick value when question data is available
-//   useEffect(() => {
-//     if (question?.question_parts?.length > 0) {
-//       setTabClick(question.question_parts[0].id); // Automatically click the first tab
-//     }
-//   }, [question]);
-//   // Columns definition for the Ant Design Table
-//   const columns = [
-//     {
-//       title: "Statement",
-//       dataIndex: "question",
-//       key: "question",
-//     },
-//     {
-//       title: "True",
-//       key: "true",
-//       render: (_, record) =>
-//         record.choices.map(
-//           (choice) =>
-//             choice.header === "True" && (
-//               <Radio
-//                 value={choice.header}
-//                 checked={
-//                   selectedAnswers[record.question]?.value === choice.header
-//                 }
-//                 onChange={() =>
-//                   handleSelectionChange(
-//                     record.question,
-//                     choice.header,
-//                     choice.id
-//                   )
-//                 }
-//               />
-//             )
-//         ),
-//     },
-//     {
-//       title: "False",
-//       key: "false",
-//       render: (_, record) =>
-//         record.choices.map(
-//           (choice) =>
-//             choice.header === "False" && (
-//               <Radio
-//                 value={choice.header}
-//                 checked={
-//                   selectedAnswers[record.question]?.value === choice.header
-//                 }
-//                 onChange={() =>
-//                   handleSelectionChange(
-//                     record.question,
-//                     choice.header,
-//                     choice.id
-//                   )
-//                 }
-//               />
-//             )
-//         ),
-//     },
-//     {
-//       title: "Moderate",
-//       key: "moderate",
-//       render: (_, record) =>
-//         record.choices.map(
-//           (choice) =>
-//             choice.header === "Moderate" && (
-//               <Radio
-//                 value={choice.header}
-//                 checked={
-//                   selectedAnswers[record.question]?.value === choice.header
-//                 }
-//                 onChange={() =>
-//                   handleSelectionChange(
-//                     record.question,
-//                     choice.header,
-//                     choice.id
-//                   )
-//                 }
-//               />
-//             )
-//         ),
-//     },
-//   ];
-
-//   // Data preparation for the table
-//   const data = question?.options.map((option, index) => ({
-//     key: index,
-//     question: option.question,
-//     choices: option.choices,
-//   }));
-
-//   const handelTabClick = (id) => {
-//     autoSelectCorrectAnswers()
-//     setTabClick(id);
-//   };
-
-//   return (
-//     <div>
-//       <h1 className="mb-5">{question?.question}</h1>
-
-//       <div className="flex justify-start items-center gap-3 mb-3">
-//         {question?.question_parts?.map((item, index) => (
-//           <Button key={index} onClick={() => handelTabClick(item?.id)}>
-//             {item?.title}
-//           </Button>
-//         ))}
-//       </div>
-
-//       {/* Render the content of the selected tab */}
-//       <div className="mb-3">
-//         {question?.question_parts?.map(
-//           (item) =>
-//             tabClick === item?.id && (
-//               <div
-//                 key={item?.id}
-//                 dangerouslySetInnerHTML={{ __html: item?.content }}
-//               />
-//             )
-//         )}
-//       </div>
-
-//       {question?.final_part?.trim() !== "" && (
-//         <div className="mb-3 max">
-//           <p> {question?.final_part}</p>
-//         </div>
-//       )}
-
-//       <Table
-//         columns={columns}
-//         dataSource={data}
-//         pagination={false}
-//         bordered
-//         rowKey="key"
-//       />
-
-//       <div className=" mb-4 mt-5">
-//         <Button
-//           style={{ background: "blue", color: "white" }}
-//           onClick={() => setNext(question?.id)}
-//         >
-//           Submit
-//         </Button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default MatrixMultipleChoiceQuestion;
-
 import React, { useEffect, useState } from "react";
 import { Table, Radio, Button } from "antd";
 import { submitEachAnswer } from "../../api";
+import BookmarkAddedRoundedIcon from "@mui/icons-material/BookmarkAddedRounded";
+import CreateRoundedIcon from "@mui/icons-material/CreateRounded";
+import WatchLaterRoundedIcon from "@mui/icons-material/WatchLaterRounded";
 
 const MatrixMultipleChoiceQuestion = ({
   question,
@@ -246,7 +52,7 @@ const MatrixMultipleChoiceQuestion = ({
       user_id: user_id,
       exam_id: exam_id,
       question_id: question?.id,
-      selected_answer: selectedValue, // Could be an array for multiple responses
+      selected_answer: selectedValue === null ? [] : selectedValue, // Could be an array for multiple responses
       question_type: question?.type,
     };
 
@@ -484,6 +290,48 @@ const MatrixMultipleChoiceQuestion = ({
                   />
                 )
             )}
+          </div>
+
+          <div className="max-w-[90%] m-auto mt-9 h-20 bg-[#f3f3f354]  grid grid-cols-[1fr_1fr] shadow-[0px_4px_6px_rgba(0,0,0,0.1)]">
+            <div className="p-2 grid place-items-center">
+              <div>
+                <div className="flex justify-center items-center gap-2">
+                  <span>
+                    <BookmarkAddedRoundedIcon />
+                  </span>
+                  <div>
+                    <p className="text-xs">0/9</p>
+                    <p className="text-xs">Scored max</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* <div className="p-2 grid place-items-center">
+              <div>
+                <div className="flex justify-center items-center gap-2">
+                  <span>
+                    <CreateRoundedIcon />
+                  </span>
+                  <div>
+                    <p className="text-xs">0/9 Scoring</p>
+                    <p className="text-xs">Scoring Rule</p>
+                  </div>
+                </div>
+              </div>
+            </div> */}
+            <div className="p-2 grid place-items-center">
+              <div>
+                <div className="flex justify-center items-center gap-2">
+                  <span>
+                    <WatchLaterRoundedIcon />
+                  </span>
+                  <div>
+                    <p className="text-xs">02 secs</p>
+                    <p className="text-xs">Time Spend</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </>
       )}
