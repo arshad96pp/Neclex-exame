@@ -16,29 +16,18 @@ const Header = ({ config, currentQuestion }) => {
     enterFullScreen,
     exitFullScreen,
     isFullScreen,
+
+    timeLeft,
+    timerRunning,
+    formatTime,
+    handleButtonClick,
+    notTime,
+    
+    
   } = config;
 
-  const [time, setTime] = useState(0); // Start from 0 seconds
+  console.log("addddddd", timerRunning);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTime((prevTime) => {
-        if (prevTime >= 180) { // Stop the timer when it reaches 3 minutes
-          clearInterval(interval);
-          return prevTime;
-        }
-        return prevTime + 1; // Increment time by 1 second
-      });
-    }, 1000); // Update the time every second
-
-    return () => clearInterval(interval); // Clean up interval on component unmount
-  }, []);
-
-  const formatTime = (timeInSeconds) => {
-    const minutes = Math.floor(timeInSeconds / 60);
-    const seconds = timeInSeconds % 60;
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-  };
   return (
     <>
       <div className="flex flex-wrap items-center justify-between p-1 px-4 bg-blue-900 text-white ">
@@ -61,7 +50,12 @@ const Header = ({ config, currentQuestion }) => {
               <span className="text-sm">
                 <AccessAlarmsRoundedIcon />
               </span>
-              <h4 className="text-sm">{formatTime(time)}</h4>
+
+              {exam?.is_timed === "1" ? (
+                <h4 className="text-sm">{formatTime(timeLeft)}</h4>
+              ) : (
+                <h4 className="text-sm">{notTime}</h4>
+              )}
             </div>
 
             <div className="flex justify-start items-center gap-2">

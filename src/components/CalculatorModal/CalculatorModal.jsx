@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Modal, Input } from "antd";
-import { evaluate } from "mathjs"; 
+import { evaluate } from "mathjs";
 
 const Calculator = () => {
   const [expression, setExpression] = useState("");
@@ -8,29 +8,48 @@ const Calculator = () => {
 
   // Handle button click
   const handleClick = (value) => {
-    // Handle special cases like sin, cos, etc.
     if (value === "=") {
       try {
         // Using math.js to safely evaluate the expression
         const evaluatedResult = evaluate(expression);
-        setResult(evaluatedResult);
+        setResult(evaluatedResult.toString()); // Ensure it's a string
       } catch (error) {
-        // If there's an error in the expression, show 0
-        setResult("0");
+        // If there's an error in the expression, show error message
+        setResult("Error");
       }
     } else if (value === "C") {
       setExpression("");
       setResult("0");
     } else {
-      // Avoid adding multiple operators or invalid sequences
+      // Handle operators or special functions (like sin, cos, etc.)
+      const operators = ["+", "-", "*", "/", "^", "x"];
       if (
-        (["+", "-", "*", "/", "^"].includes(value) && expression === "") ||
-        (["+", "-", "*", "/", "^"].includes(expression.slice(-1)) && ["+", "-", "*", "/", "^"].includes(value))
+        (operators.includes(value) && expression === "") ||
+        (operators.includes(expression.slice(-1)) && operators.includes(value))
       ) {
         // Don't allow invalid expressions
         return;
       }
-      setExpression(expression + value);
+
+      // Handle square root and other special functions (e.g., sin, cos)
+      if (value === "sqrt") {
+        setExpression(expression + "sqrt("); // Add sqrt function
+        return;
+      }
+      if (
+        value === "sin" ||
+        value === "cos" ||
+        value === "tan" ||
+        value === "log" ||
+        value === "ln"
+      ) {
+        setExpression(expression + `${value}(`); // Add trigonometric/logarithmic functions
+        return;
+      }
+
+      // Replace "x" with "*" for multiplication
+      const newExpression = value === "x" ? "*" : value;
+      setExpression(expression + newExpression);
       setResult("0"); // Reset the result to 0 when typing
     }
   };
@@ -54,11 +73,31 @@ const Calculator = () => {
       {/* Calculator Buttons */}
       <div className="grid grid-cols-5 gap-2">
         {[
-          "7", "8", "9", "/", "sqrt",
-          "4", "5", "6", "x", "^",
-          "1", "2", "3", "-", "(",
-          "C", "0", "=", "+", ")",
-          "sin", "cos", "tan", "log", "ln"
+          "7",
+          "8",
+          "9",
+          "/",
+          "sqrt",
+          "4",
+          "5",
+          "6",
+          "x",
+          "^",
+          "1",
+          "2",
+          "3",
+          "-",
+          "(",
+          "C",
+          "0",
+          "=",
+          "+",
+          ")",
+          "sin",
+          "cos",
+          "tan",
+          "log",
+          "ln",
         ].map((item) => (
           <Button
             key={item}
@@ -80,8 +119,7 @@ const Calculator = () => {
   );
 };
 
-const CalculatorModal = ({isModalVisible, setIsModalVisible}) => {
-
+const CalculatorModal = ({ isModalVisible, setIsModalVisible }) => {
   const showModal = () => {
     setIsModalVisible(true);
   };
@@ -96,7 +134,6 @@ const CalculatorModal = ({isModalVisible, setIsModalVisible}) => {
 
   return (
     <>
-   
       <Modal
         title="Calculator"
         width={400}

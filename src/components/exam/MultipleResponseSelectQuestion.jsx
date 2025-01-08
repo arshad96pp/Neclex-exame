@@ -11,9 +11,23 @@ const MultipleResponseSelectQuestion = ({
   selectedValue,
   onChange,
   config,
+  handelNextFunction
 }) => {
   const [selectedOptions, setSelectedOptions] = useState(selectedValue || []); // Initial value can be passed as a prop
-  const { setNext, next, user_id, exam_id, getAllQuestion } = config;
+  const {
+    setNext,
+    next,
+    user_id,
+    exam,
+    exam_id,
+    getAllQuestion,
+    timeLeft,
+    initialTime,
+    handleButtonClick,
+    formatTime,
+    handleStartTimer,
+    stopTimer,
+  } = config;
 
   const handelChange = (e) => {
     const { value, checked } = e.target;
@@ -55,26 +69,40 @@ const MultipleResponseSelectQuestion = ({
   const handelReviewClick = async () => {
     setNext(question?.id);
     localStorage.setItem("examReview", question?.id);
-
+    const timeDifference = initialTime - timeLeft;
+    handleButtonClick();
     const dataitem = {
       user_id: user_id,
       exam_id: exam_id,
       question_id: question?.id,
       selected_answer: selectedValue === null ? [] : selectedValue, // Could be an array for multiple responses
       question_type: question?.type,
+      time_taken:
+        exam?.is_timed === "1"
+          ? formatTime(timeDifference)
+          : formatTime(timeLeft),
     };
 
     try {
-      const response = await submitEachAnswer(dataitem);
+      const response = await handelNextFunction(dataitem);
 
       if (response?.status) {
-        getAllQuestion();
+        // stopTimer();
+        // getAllQuestion();
         console.log("responseee", response);
       }
     } catch (error) {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    if (question?.is_attended !== 1) {
+      handleStartTimer();
+    } else {
+      stopTimer();
+    }
+  }, [question?.is_attended]);
 
   return (
     <div>
@@ -84,7 +112,7 @@ const MultipleResponseSelectQuestion = ({
 
       {/* Options Section */}
 
-      {question?.is_attended === 1 ? (
+      {exam?.is_tutored === "1" && question?.is_attended === 1 ? (
         <>
           <div>
             <ul className="ml-0 lg:ml-6 mb-5">
@@ -130,7 +158,7 @@ const MultipleResponseSelectQuestion = ({
                     <BookmarkAddedRoundedIcon />
                   </span>
                   <div>
-                    <p className="text-xs">0/9</p>
+                  <p className="text-xs">{question?.time_taken}</p>
                     <p className="text-xs">Scored max</p>
                   </div>
                 </div>
@@ -183,17 +211,20 @@ const MultipleResponseSelectQuestion = ({
           </div>
 
           {/* Navigation Buttons */}
-          <div className="ml-0 lg:ml-6 mb-5">
-            <Button
-              style={{ background: "blue", color: "white" }}
-              onClick={() => {
-                onChange(selectedOptions);
-                handelReviewClick();
-              }}
-            >
-              Submit
-            </Button>
-          </div>
+
+          {exam?.is_tutored === "1" && (
+            <div className="ml-0 lg:ml-6 mb-5">
+              <Button
+                style={{ background: "blue", color: "white" }}
+                onClick={() => {
+                  onChange(selectedOptions);
+                  handelReviewClick();
+                }}
+              >
+                Submit
+              </Button>
+            </div>
+          )}
         </>
       )}
     </div>

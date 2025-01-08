@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { Modal, Button } from "antd";
 
 const TimeOut = ({ config, onFinsh }) => {
-  const { endExameModal, setEndExamModal } = config;
+  const { timeIsUpModal, setTimeIsUpModal } = config;
   // Show modal
   const showModal = () => {
-    setEndExamModal(true);
+    setTimeIsUpModal(true);
   };
 
   // Handle modal ok (confirm)
@@ -13,24 +13,23 @@ const TimeOut = ({ config, onFinsh }) => {
     // Your suspend or end exam action logic here
     console.log("Exam has been ended.");
     onFinsh();
-    setEndExamModal(false); // Close the modal after confirming
+    setTimeIsUpModal(false); // Close the modal after confirming
   };
 
   // Handle modal cancel (close)
   const handleCancel = () => {
-    setEndExamModal(false); // Just close the modal
+    setTimeIsUpModal(false); // Just close the modal
   };
 
   return (
     <div>
       {/* Ant Design Modal for suspend confirmation */}
       <Modal
-        title="End Exam"
-        visible={endExameModal}
+        title="Warning"
+        visible={timeIsUpModal}
         onOk={handleOk}
-        onCancel={handleCancel}
-        okText="End Exam"
-        cancelText="Cancel"
+        // Remove onCancel to hide the cancel button
+        okText="Submit"
         okButtonProps={{
           style: {
             backgroundColor: "red", // Urgent red color for "End Exam"
@@ -38,13 +37,7 @@ const TimeOut = ({ config, onFinsh }) => {
             color: "white", // Make text white
           },
         }}
-        cancelButtonProps={{
-          style: {
-            backgroundColor: "gray", // Neutral gray for "Cancel"
-            borderColor: "gray", // Ensure border color matches
-            color: "white", // Make text white
-          },
-        }}
+        cancelButtonProps={{ style: { display: "none" } }} // Hides the Cancel button
       >
         <p>Your time for the exam has expired</p>
       </Modal>

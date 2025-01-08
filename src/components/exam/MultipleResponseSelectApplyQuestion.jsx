@@ -12,10 +12,25 @@ const MultipleResponseSelectApplyQuestion = ({
   selectedValue,
   onChange,
   config,
+  handelNextFunction
+
 }) => {
   // Use state to keep track of selected options
   const [selectedOptions, setSelectedOptions] = useState(selectedValue || []); // Initial value can be passed as a prop
-  const { setNext, next, user_id, exam_id, getAllQuestion } = config;
+  const {
+    setNext,
+    next,
+    exam,
+    user_id,
+    exam_id,
+    getAllQuestion,
+    handleStartTimer,
+    stopTimer,
+    timeLeft,
+    initialTime,
+    handleButtonClick,
+    formatTime,
+  } = config;
 
   const handelChange = (e) => {
     const { value, checked } = e.target;
@@ -43,20 +58,26 @@ const MultipleResponseSelectApplyQuestion = ({
   const handelReviewClick = async () => {
     setNext(question?.id);
     localStorage.setItem("examReview", question?.id);
-
+    const timeDifference = initialTime - timeLeft;
+    handleButtonClick();
     const dataitem = {
       user_id: user_id,
       exam_id: exam_id,
       question_id: question?.id,
       selected_answer: selectedValue === null ? [] : selectedValue, // Could be an array for multiple responses
       question_type: question?.type,
+      time_taken:
+        exam?.is_timed === "1"
+          ? formatTime(timeDifference)
+          : formatTime(timeLeft),
     };
 
     try {
-      const response = await submitEachAnswer(dataitem);
+      const response = await handelNextFunction(dataitem);
 
       if (response?.status) {
-        getAllQuestion();
+        // stopTimer();
+        // getAllQuestion();
         console.log("responseee", response);
       }
     } catch (error) {
@@ -66,6 +87,14 @@ const MultipleResponseSelectApplyQuestion = ({
 
   console.log("MY DATA", question);
 
+  useEffect(() => {
+    if (question?.is_attended !== 1) {
+      handleStartTimer();
+    } else {
+      stopTimer();
+    }
+  }, [question?.is_attended]);
+
   return (
     <div>
       <div>
@@ -73,7 +102,7 @@ const MultipleResponseSelectApplyQuestion = ({
         <div className="mb-5">
           <p>{question?.question}</p>
         </div>
-        {question?.is_attended === 1 ? (
+        {exam?.is_tutored === "1" && question?.is_attended === 1 ? (
           <>
             {/* Options Section */}
             <div>
@@ -112,20 +141,20 @@ const MultipleResponseSelectApplyQuestion = ({
               </ul>
             </div>
             <div className="max-w-[90%] mt-9 m-auto h-20 bg-[#f3f3f354]  grid grid-cols-[1fr_1fr] shadow-[0px_4px_6px_rgba(0,0,0,0.1)]">
-            <div className="p-2 grid place-items-center">
-              <div>
-                <div className="flex justify-center items-center gap-2">
-                  <span>
-                    <BookmarkAddedRoundedIcon />
-                  </span>
-                  <div>
-                    <p className="text-xs">0/9</p>
-                    <p className="text-xs">Scored max</p>
+              <div className="p-2 grid place-items-center">
+                <div>
+                  <div className="flex justify-center items-center gap-2">
+                    <span>
+                      <BookmarkAddedRoundedIcon />
+                    </span>
+                    <div>
+                      <p className="text-xs">0/9</p>
+                      <p className="text-xs">Scored max</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            {/* <div className="p-2 grid place-items-center">
+              {/* <div className="p-2 grid place-items-center">
               <div>
                 <div className="flex justify-center items-center gap-2">
                   <span>
@@ -138,20 +167,20 @@ const MultipleResponseSelectApplyQuestion = ({
                 </div>
               </div>
             </div> */}
-            <div className="p-2 grid place-items-center">
-              <div>
-                <div className="flex justify-center items-center gap-2">
-                  <span>
-                    <WatchLaterRoundedIcon />
-                  </span>
-                  <div>
-                    <p className="text-xs">02 secs</p>
-                    <p className="text-xs">Time Spend</p>
+              <div className="p-2 grid place-items-center">
+                <div>
+                  <div className="flex justify-center items-center gap-2">
+                    <span>
+                      <WatchLaterRoundedIcon />
+                    </span>
+                    <div>
+                    <p className="text-xs">{question?.time_taken}</p>
+                      <p className="text-xs">Time Spend</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
           </>
         ) : (
           <>
@@ -173,17 +202,19 @@ const MultipleResponseSelectApplyQuestion = ({
             </div>
 
             {/* Navigation Buttons (optional, if you want to keep them) */}
-            <div className="ml-0 lg:ml-6 mb-5">
-              <Button
-                style={{ background: "blue", color: "white" }}
-                onClick={() => {
-                  onChange(selectedOptions);
-                  handelReviewClick();
-                }}
-              >
-                Submit
-              </Button>
-            </div>
+            {exam?.is_tutored === "1" && (
+              <div className="ml-0 lg:ml-6 mb-5">
+                <Button
+                  style={{ background: "blue", color: "white" }}
+                  onClick={() => {
+                    onChange(selectedOptions);
+                    handelReviewClick();
+                  }}
+                >
+                  Submit
+                </Button>
+              </div>
+            )}
           </>
         )}
       </div>

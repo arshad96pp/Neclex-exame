@@ -19,7 +19,12 @@ const MatrixMultipleChoiceQuestion = ({
     updateReviewList,
     user_id,
     exam_id,
+    exam,
     getAllQuestion,
+    timeLeft,
+    initialTime,
+    handleButtonClick: handeltimeStop,
+    formatTime,
   } = config;
 
   const [tabClick, setTabClick] = useState(null);
@@ -48,12 +53,16 @@ const MatrixMultipleChoiceQuestion = ({
     // autoSelectCorrectAnswers(); // Auto-select correct answers
     setNext(question?.id); // Trigger next question logic
     localStorage.setItem("examReview", question?.id);
+
+    const timeDifference = initialTime - timeLeft;
+    handeltimeStop();
     const dataitem = {
       user_id: user_id,
       exam_id: exam_id,
       question_id: question?.id,
       selected_answer: selectedValue === null ? [] : selectedValue, // Could be an array for multiple responses
       question_type: question?.type,
+      time_taken: formatTime(timeDifference),
     };
 
     try {
@@ -300,7 +309,7 @@ const MatrixMultipleChoiceQuestion = ({
                     <BookmarkAddedRoundedIcon />
                   </span>
                   <div>
-                    <p className="text-xs">0/9</p>
+                  <p className="text-xs">{question?.time_taken}</p>
                     <p className="text-xs">Scored max</p>
                   </div>
                 </div>
@@ -342,7 +351,7 @@ const MatrixMultipleChoiceQuestion = ({
         </div>
       )}
 
-      {question?.is_attended === 1 ? (
+      {exam?.is_tutored === "1" && question?.is_attended === 1 ? (
         <>
           <Table
             columns={columnsSame}
@@ -362,14 +371,16 @@ const MatrixMultipleChoiceQuestion = ({
             rowKey="key"
           />
 
-          <div className=" mb-4 mt-5">
-            <Button
-              style={{ background: "blue", color: "white" }}
-              onClick={handleButtonClick} // Call auto-select on button click
-            >
-              Submit
-            </Button>
-          </div>
+          {exam?.is_tutored === "1" && (
+            <div className=" mb-4 mt-5">
+              <Button
+                style={{ background: "blue", color: "white" }}
+                onClick={handleButtonClick} // Call auto-select on button click
+              >
+                Submit
+              </Button>
+            </div>
+          )}
         </>
       )}
     </div>

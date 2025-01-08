@@ -5,7 +5,7 @@ import MatrixMultipleChoiceQuestion from "../components/exam/MatrixMultipleChoic
 import MultipleResponseSelectQuestion from "../components/exam/MultipleResponseSelectQuestion";
 import MultipleResponseSelectApplyQuestion from "../components/exam/MultipleResponseSelectApplyQuestion";
 import { examData } from "../service/exams";
-import { getQuestions, submitEachAnswer } from "../api";
+import { getQuestions } from "../api";
 import Header from "../components/header/Header";
 import { Modal, Input } from "antd";
 import ModalCompo from "../components/Modal/ModalCompo";
@@ -22,11 +22,9 @@ import ReplyAllIcon from "@mui/icons-material/ReplyAll";
 import SuspendPopup from "../components/PopupsEnd/SuspendPopup";
 import EndExamModal from "../components/PopupsEnd/EndExamModal";
 import TimeOut from "../components/PopupsEnd/TimeOut";
-import { useAppContext } from "../context";
 
 const NursingTestUI = ({ userId, examId }) => {
   const [next, setNext] = useState(null);
-  const { setGlobelSelecte, globelSelecte } = useAppContext();
 
   const [currentIndex, setCurrentIndex] = useState(
     localStorage.getItem("currentIndex") || 0
@@ -81,66 +79,70 @@ const NursingTestUI = ({ userId, examId }) => {
     }
   }, []);
 
-  // time calculation start
-
-  const [timeLeft, setTimeLeft] = useState(0); // Time left
+  const [timeLeft, setTimeLeft] = useState(0); // Time left in seconds
   const [timerRunning, setTimerRunning] = useState(false); // Timer state
-  const [initialTime, setInitialTime] = useState(0); // Store the initial time in seconds
-
+  const [initialTime, setInitialTime] = useState(0); // Initial time in seconds
+  
   useEffect(() => {
-    // Check if exam.is_timed is "1" (string) and total_time exists
-    if (exam?.is_timed === "1" && exam?.total_time) {
+    // Parse the initial time from API (e.g., "2:00") and check if not attended
+    if (exam?.total_time && exam?.is_attended !== 1) {
       const [minutes, seconds] = exam?.total_time.split(":").map(Number);
       const totalSeconds = minutes * 60 + (seconds || 0); // Convert to seconds
-      setTimeLeft(totalSeconds); // Set time left initially
-      setInitialTime(totalSeconds); // Store the initial time in seconds
+      setTimeLeft(totalSeconds);
+      setInitialTime(totalSeconds); // Store the initial time
       setTimerRunning(true); // Start the timer immediately
     }
-  }, [exam?.is_timed, exam?.total_time]);
-
+  }, [exam?.total_time, exam?.is_attended]);
+  
   useEffect(() => {
     let timer;
-
-    if (timerRunning) {
+  
+    if (timerRunning && timeLeft > 0) {
+      // Set an interval to decrement the time by 1 second every 1000 ms
       timer = setInterval(() => {
-        setTimeLeft((prevTime) => prevTime - 1); // Decrement time when counting down
+        setTimeLeft((prevTime) => prevTime - 1);
       }, 1000);
     }
-
+  
     if (timeLeft === 0 && timerRunning) {
-      setTimerRunning(false); // Stop the timer when time reaches 0
-      console.log("Time is up!"); // Log when time is up
-      // You can show a modal or other actions here
+      setTimerRunning(false); // Stop the timer at 0
+      console.log("Time is up!"); // Print this message when time reaches 0
+      setTimeIsUpModal(true); // Show the modal (or other actions when time is up)
     }
-
+  
     return () => clearInterval(timer); // Cleanup interval when component unmounts or dependencies change
   }, [timerRunning, timeLeft]);
-
+  
   const formatTime = (timeInSeconds) => {
-    const hours = Math.floor(timeInSeconds / 3600); // Calculate hours
-    const minutes = Math.floor((timeInSeconds % 3600) / 60); // Calculate minutes
-    const seconds = timeInSeconds % 60; // Calculate seconds
-
-    return `${hours > 0 ? `${hours < 10 ? "0" : ""}${hours}:` : ""}${
-      minutes < 10 ? "0" : ""
-    }${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = timeInSeconds % 60;
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
-
+  
   const handleButtonClick = () => {
     setTimerRunning(false); // Stop the timer
+    const timeDifference = initialTime - timeLeft; // Difference in seconds
     console.log(`Timer stopped at: ${formatTime(timeLeft)}`);
+    console.log(`Time elapsed: ${formatTime(timeDifference)}`);
   };
-
+  
   const handleReset = () => {
-    setTimeLeft(initialTime); // Reset timeLeft to the initial time value
+    const timeDifference = initialTime - timeLeft; // Calculate the time difference before resetting
+    console.log("Time elapsed before reset:", formatTime(timeDifference));
+  
+    setTimeLeft(initialTime); // Reset timeLeft to initialTime
     setTimerRunning(true); // Restart the timer
-    console.log("Timer reset.");
+  
+    // Log the reset time as "00:00"
+    console.log("Timer reset to initial time:", formatTime(0));
   };
-
+  
   const stopTimer = () => {
     setTimerRunning(false); // Stop the timer
     console.log("Timer stopped at:", formatTime(timeLeft));
   };
+
+  
 
   const handleStartTimer = () => {
     setTimerRunning(true); // Restart the timer
@@ -148,63 +150,6 @@ const NursingTestUI = ({ userId, examId }) => {
   };
 
   // time calculation end
-
-  // not timed
-  const [elapsedTime, setElapsedTime] = useState(0); // Time spent on the current question
-  const [isTimerActive, setIsTimerActive] = useState(false); // Timer state
-  const [questionStartTimestamp, setQuestionStartTimestamp] = useState(0); // Store the start time of each question
-
-  useEffect(() => {
-    // Automatically start the timer when the component mounts
-    startQuestionTimer();
-  }, []); // Empty dependency array ensures this runs only once when the component mounts
-
-  useEffect(() => {
-    let questionTimerInterval;
-
-    // If timer is active, increment the elapsed time every second
-    if (isTimerActive) {
-      questionTimerInterval = setInterval(() => {
-        setElapsedTime((prevTime) => prevTime + 1); // Increment elapsed time for each question
-      }, 1000);
-    }
-
-    return () => clearInterval(questionTimerInterval); // Cleanup interval when timer stops
-  }, [isTimerActive]);
-
-  // Format time in 00:00 (minutes:seconds)
-  const formatElapsedTime = (timeInSeconds) => {
-    const minutes = Math.floor(timeInSeconds / 60); // Calculate minutes
-    const seconds = timeInSeconds % 60; // Calculate seconds
-    return `${minutes < 10 ? "0" : ""}${minutes}:${
-      seconds < 10 ? "0" : ""
-    }${seconds}`; // Format as 00:00
-  };
-
-  const startQuestionTimer = () => {
-    setIsTimerActive(true); // Start the timer for the question
-    setQuestionStartTimestamp(Date.now()); // Track start timestamp for the question
-    console.log("Question timer started.");
-  };
-
-  const stopQuestionTimer = () => {
-    setIsTimerActive(false); // Stop the timer for the question
-    console.log(`Question timer stopped at: ${formatElapsedTime(elapsedTime)}`);
-  };
-
-  const resetQuestionTimer = () => {
-    setElapsedTime(0); // Reset elapsed time
-    setIsTimerActive(true); // Restart the timer
-    console.log("Question timer reset.");
-  };
-
-  // Track the time spent on the current question
-  const submitQuestion = () => {
-    console.log(
-      `Time spent on this question: ${formatElapsedTime(elapsedTime)}`
-    );
-    // You can send the time spent on this question to the API
-  };
 
   const handleAnswerChange = (questionId, value, type) => {
     setResponses((prev) => ({
@@ -216,32 +161,7 @@ const NursingTestUI = ({ userId, examId }) => {
     }));
   };
 
-  const handelNextFunction = async (dataitem) => {
-    try {
-      const response = await submitEachAnswer(dataitem);
-      if (response?.data?.status) {
-        stopTimer();
-        getAllQuestion();
-
-        console.log("response ayitund", response);
-
-        return response; // Return the response after success
-      }
-      return null; // Return null if the response is not successful
-    } catch (error) {
-      console.log(error);
-      return null; // Handle error and return null
-    }
-  };
-
-  const handleNext = async (data) => {
-    const currentQuestion = exam?.questions[currentIndex];
-    const answerData = responses;
-
-    console.log("answer", answerData);
-    console.log("selcted", globelSelecte);
-
-
+  const handleNext = () => {
     if (currentIndex < exam?.questions?.length - 1) {
       const nextIndex = currentIndex + 1; // Calculate the next index
       setCurrentIndex(nextIndex);
@@ -250,12 +170,6 @@ const NursingTestUI = ({ userId, examId }) => {
       localStorage.setItem("currentIndex", nextIndex);
 
       console.log("EXAM QUESTIONS - Current Index:", nextIndex);
-    }
-
-    try {
-      
-    } catch (error) {
-      
     }
   };
 
@@ -334,11 +248,6 @@ const NursingTestUI = ({ userId, examId }) => {
     setTimeIsUpModal,
     stopTimer,
     handleStartTimer,
-    handleNext,
-
-    // not timed
-
-    notTime: formatElapsedTime(elapsedTime),
   };
 
   const handleNoteChange = () => {};
@@ -433,28 +342,17 @@ const NursingTestUI = ({ userId, examId }) => {
 
     switch (type) {
       case "multiple_choice":
-        return (
-          <MultipleChoiceQuestion
-            {...commonProps}
-            config={config}
-            handelNextFunction={handelNextFunction}
-          />
-        );
+        return <MultipleChoiceQuestion {...commonProps} config={config} />;
 
       case "multiple_response_select":
         return (
-          <MultipleResponseSelectQuestion
-            {...commonProps}
-            config={config}
-            handelNextFunction={handelNextFunction}
-          />
+          <MultipleResponseSelectQuestion {...commonProps} config={config} />
         );
       case "multiple_response_select_apply":
         return (
           <MultipleResponseSelectApplyQuestion
             {...commonProps}
             config={config}
-            handelNextFunction={handelNextFunction}
           />
         );
       // case "matrix_multiple_choice":
@@ -467,8 +365,6 @@ const NursingTestUI = ({ userId, examId }) => {
   };
 
   const sanitizedHtml = DOMPurify.sanitize(currentQuestion?.explanation);
-
-  console.log("get GLOBLE DATA", globelSelecte);
 
   return (
     <>
@@ -491,11 +387,7 @@ const NursingTestUI = ({ userId, examId }) => {
             }  p-3 pr-0  ${
               currentQuestion?.is_attended === 1 ? "" : "lg:pr-60"
             } lg:p-6   `}
-            style={
-              isMobile
-                ? {}
-                : { maxHeight: "calc(100vh - 160px)", overflowY: "auto" }
-            }
+            style={isMobile ? {} : { maxHeight: "600px", overflowY: "auto" }}
           >
             <div>{renderQuestion(currentQuestion)}</div>
           </div>
@@ -504,11 +396,7 @@ const NursingTestUI = ({ userId, examId }) => {
           {currentQuestion?.is_attended === 1 && (
             <div
               className="w-full lg:w-1/2 p-6 border-l "
-              style={
-                isMobile
-                  ? {}
-                  : { maxHeight: "calc(100vh - 160px)", overflowY: "auto" }
-              }
+              style={isMobile ? {} : { maxHeight: "600px", overflowY: "auto" }}
             >
               <h2 className="font-bold mb-2">Explanation</h2>
 

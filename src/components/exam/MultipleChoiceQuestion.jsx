@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Radio, Button } from "antd";
 import DOMPurify from "dompurify";
 import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
@@ -7,14 +7,36 @@ import BookmarkAddedRoundedIcon from "@mui/icons-material/BookmarkAddedRounded";
 import CreateRoundedIcon from "@mui/icons-material/CreateRounded";
 import WatchLaterRoundedIcon from "@mui/icons-material/WatchLaterRounded";
 import { submitEachAnswer } from "../../api";
+import { useAppContext } from "../../context";
 
 const MultipleChoiceQuestion = ({
   question,
   selectedValue,
   onChange,
   config,
+  handelNextFunction,
 }) => {
-  const { setNext, next, getAllQuestion, user_id, exam_id } = config;
+  const {
+    setNext,
+    next,
+    getAllQuestion,
+    user_id,
+    exam_id,
+    exam,
+    timeLeft,
+    initialTime,
+    handleButtonClick,
+    formatTime,
+    handleReset,
+    stopTimer,
+    handleStartTimer,
+    currentIndex,
+
+    
+  } = config;
+
+  const [slected, setSelected] = useState(null);
+  const { setGlobelSelecte } = useAppContext();
 
   // Function to sanitize and remove <p> tags
   const cleanOptionText = (text) => {
@@ -26,43 +48,63 @@ const MultipleChoiceQuestion = ({
   };
 
   const handelReviewClick = async () => {
-    console.log("sleted value", selectedValue);
+    const timeDifference = initialTime - timeLeft;
 
+    handleButtonClick();
     setNext(question?.id);
-
     const dataitem = {
       user_id: user_id,
       exam_id: exam_id,
       question_id: question?.id,
       selected_answer: selectedValue === null ? [] : selectedValue, // Could be an array for multiple responses
       question_type: question?.type,
+      time_taken:
+        exam?.is_timed === "1"
+          ? formatTime(timeDifference)
+          : formatTime(timeLeft),
     };
 
-    // Create FormData
-    const formData = new FormData();
-
-    // Use Object.entries() to loop through dataitem and append to FormData
-    Object.entries(dataitem).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
 
     try {
-      const response = await submitEachAnswer(dataitem);
+      const response = await handelNextFunction(dataitem);
       if (response?.data?.status) {
-        getAllQuestion();
+        // stopTimer();
+        // getAllQuestion();
       }
     } catch (error) {
       console.log(error);
     }
   };
 
+  useEffect(() => {
+    if (question?.is_attended !== 1) {
+      handleStartTimer();
+    } else {
+      stopTimer();
+    }
+  }, [question?.is_attended]);
+
+  console.log("nexttttt", slected);
+
   return (
     <div>
-      {question?.is_attended === 1 ? (
+      {exam?.is_tutored === "1" && question?.is_attended === 1 ? (
         <>
           <div className="mb-5 text-[16px]">
             {cleanOptionText(question?.question)}
           </div>
+          {question?.question_image?.trim() !== "" && (
+            <>
+              <div>
+                <img
+                  className="w-64 md:w-96"
+                  src={question?.question_image}
+                  alt=""
+                />
+              </div>
+            </>
+          )}
+
           <div className="pl-0 lg:p-5 mb-4">
             <Radio.Group
               value={question?.selected_answer?.[0]} // Track the first selected answer (if there are multiple, we'll handle them)
@@ -134,7 +176,7 @@ const MultipleChoiceQuestion = ({
                     <WatchLaterRoundedIcon />
                   </span>
                   <div>
-                    <p className="text-xs">02 secs</p>
+                    <p className="text-xs">{question?.time_taken}</p>
                     <p className="text-xs">Time Spend</p>
                   </div>
                 </div>
@@ -148,9 +190,20 @@ const MultipleChoiceQuestion = ({
             {cleanOptionText(question?.question)}
           </div>
 
+          {question?.question_image?.trim() !== "" && (
+            <>
+              <div>
+                <img className="w-80" src={question?.question_image} alt="" />
+              </div>
+            </>
+          )}
+
           <div className="pl-0 lg:p-5 mb-1">
             <Radio.Group
-              onChange={(e) => onChange(e.target.value)}
+              onChange={(e) => {
+                onChange(e.target.value);
+                setSelected(e.target.value);
+              }}
               value={selectedValue}
             >
               {question?.options?.map((item, index) => (
@@ -168,14 +221,16 @@ const MultipleChoiceQuestion = ({
             </Radio.Group>
           </div>
 
-          <div className="pl-0 lg:p-5 mb-4">
-            <Button
-              style={{ background: "blue", color: "white" }}
-              onClick={() => handelReviewClick()}
-            >
-              Submit
-            </Button>
-          </div>
+          {exam?.is_tutored === "1" && (
+            <div className="pl-0 lg:p-5 mb-4">
+              <Button
+                style={{ background: "blue", color: "white" }}
+                onClick={() => handelReviewClick()}
+              >
+                Submit
+              </Button>
+            </div>
+          )}
         </>
       )}
     </div>
