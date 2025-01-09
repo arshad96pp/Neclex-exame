@@ -101,6 +101,18 @@ const MultipleResponseSelectApplyQuestion = ({
         <div className="mb-5">
           <p>{question?.question}</p>
         </div>
+
+        {question?.question_image?.trim() !== "" && (
+          <>
+            <div>
+              <img
+                className="w-64 md:w-96 mt-1 mb-1"
+                src={question?.question_image}
+                alt=""
+              />
+            </div>
+          </>
+        )}
         {exam?.is_tutored === "1" && question?.is_attended === 1 ? (
           <>
             {/* Options Section */}

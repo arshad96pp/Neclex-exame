@@ -110,6 +110,18 @@ const MultipleResponseSelectQuestion = ({
         <p>{question?.question}</p>
       </div>
 
+      {question?.question_image?.trim() !== "" && (
+        <>
+          <div>
+            <img
+              className="w-64 md:w-96 mt-1 mb-1"
+              src={question?.question_image}
+              alt=""
+            />
+          </div>
+        </>
+      )}
+
       {/* Options Section */}
 
       {exam?.is_tutored === "1" && question?.is_attended === 1 ? (
