@@ -31,8 +31,10 @@ const MultipleChoiceQuestion = ({
     stopTimer,
     handleStartTimer,
     currentIndex,
-
-    
+    handleNext,
+    pressNextButton,
+    setPressButton,
+    objRef,
   } = config;
 
   const [slected, setSelected] = useState(null);
@@ -46,6 +48,9 @@ const MultipleChoiceQuestion = ({
     });
     return sanitized;
   };
+
+
+  
 
   const handelReviewClick = async () => {
     const timeDifference = initialTime - timeLeft;
@@ -64,6 +69,7 @@ const MultipleChoiceQuestion = ({
           : formatTime(timeLeft),
     };
 
+    objRef.current = dataitem;
 
     try {
       const response = await handelNextFunction(dataitem);
@@ -83,8 +89,6 @@ const MultipleChoiceQuestion = ({
       stopTimer();
     }
   }, [question?.is_attended]);
-
-  console.log("nexttttt", slected);
 
   return (
     <div>
@@ -115,28 +119,32 @@ const MultipleChoiceQuestion = ({
               {question?.options?.map((item, index) => (
                 <div key={index} className="flex items-center mb-4">
                   {/* Correct Answer Icon */}
-                  {item?.is_correct === "1" && (
-                    <CheckCircleOutlined
-                      className="text-green-500 mr-2"
-                      style={{ fontSize: "18px" }}
-                    />
-                  )}
+                  <div className="flex items-center ">
+                    {/* Icon for correct/incorrect answer */}
+                    <div className="flex items-center">
+                      {item?.is_correct === "1" ? (
+                        <CheckCircleOutlined
+                          className="text-green-500"
+                          style={{ fontSize: "18px" }}
+                        />
+                      ) : question?.selected_answer?.includes(item?.id) &&
+                        item?.is_correct !== "1" ? (
+                        <CloseCircleOutlined
+                          className="text-red-600"
+                          style={{ fontSize: "18px" }}
+                        />
+                      ) : (
+                        <div style={{ width: "18px" }} /> // Placeholder to maintain alignment
+                      )}
+                    </div>
 
-                  {/* Incorrect Answer Icon (shown if selected) */}
-                  {question?.selected_answer?.includes(item?.id) &&
-                    item?.is_correct !== "1" && (
-                      <CloseCircleOutlined
-                        className="text-red-600 mr-2"
-                        style={{ fontSize: "18px" }}
-                      />
-                    )}
-
-                  {/* Radio button */}
-                  <Radio value={item?.id} className="flex items-center">
-                    <p className="text-[16px] ml-2">
-                      {cleanOptionText(item?.option_text)}
-                    </p>
-                  </Radio>
+                    {/* Radio button */}
+                    <Radio value={item?.id} className="flex items-center ml-2">
+                      <p className="text-[16px]">
+                        {cleanOptionText(item?.option_text)}
+                      </p>
+                    </Radio>
+                  </div>
                 </div>
               ))}
             </Radio.Group>

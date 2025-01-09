@@ -26,7 +26,7 @@ const Header = ({ config, currentQuestion }) => {
     
   } = config;
 
-  console.log("addddddd", timerRunning);
+  
 
   return (
     <>

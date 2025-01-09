@@ -11,8 +11,6 @@ const SuspendPopup = ({ config }) => {
 
   // Handle modal ok (confirm)
   const handleOk = () => {
-    // Your suspend action logic here
-    console.log("User is suspended");
     setSuspentModal(false); // Close the modal after confirming
   };
 

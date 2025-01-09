@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button, message, Radio } from "antd";
 import MultipleChoiceQuestion from "../components/exam/MultipleChoiceQuestion";
 import MatrixMultipleChoiceQuestion from "../components/exam/MatrixMultipleChoiceQuestion";
@@ -51,6 +51,9 @@ const NursingTestUI = ({ userId, examId }) => {
   });
 
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 800);
+  const [pressNextButton, setPressButton] = useState(false);
+
+  const objRef = useRef();
 
   const navigate = useNavigate();
 
@@ -107,10 +110,13 @@ const NursingTestUI = ({ userId, examId }) => {
       }, 1000);
     }
 
-    if (timeLeft === 0 && timerRunning) {
+    if (timeLeft === 0 && timerRunning && exam?.is_timed === "1") {
       setTimerRunning(false); // Stop the timer when time reaches 0
       console.log("Time is up!"); // Log when time is up
       // You can show a modal or other actions here
+      if (exam?.is_timed === "1") {
+        setTimeIsUpModal(true);
+      }
     }
 
     return () => clearInterval(timer); // Cleanup interval when component unmounts or dependencies change
@@ -128,23 +134,23 @@ const NursingTestUI = ({ userId, examId }) => {
 
   const handleButtonClick = () => {
     setTimerRunning(false); // Stop the timer
-    console.log(`Timer stopped at: ${formatTime(timeLeft)}`);
+    // console.log(`Timer stopped at: ${formatTime(timeLeft)}`);
   };
 
   const handleReset = () => {
     setTimeLeft(initialTime); // Reset timeLeft to the initial time value
     setTimerRunning(true); // Restart the timer
-    console.log("Timer reset.");
+    // console.log("Timer reset.");
   };
 
   const stopTimer = () => {
     setTimerRunning(false); // Stop the timer
-    console.log("Timer stopped at:", formatTime(timeLeft));
+    // console.log("Timer stopped at:", formatTime(timeLeft));
   };
 
   const handleStartTimer = () => {
     setTimerRunning(true); // Restart the timer
-    console.log("Timer restarted at:", formatTime(timeLeft));
+    // console.log("Timer restarted at:", formatTime(timeLeft));
   };
 
   // time calculation end
@@ -184,25 +190,25 @@ const NursingTestUI = ({ userId, examId }) => {
   const startQuestionTimer = () => {
     setIsTimerActive(true); // Start the timer for the question
     setQuestionStartTimestamp(Date.now()); // Track start timestamp for the question
-    console.log("Question timer started.");
+    // console.log("Question timer started.");
   };
 
   const stopQuestionTimer = () => {
     setIsTimerActive(false); // Stop the timer for the question
-    console.log(`Question timer stopped at: ${formatElapsedTime(elapsedTime)}`);
+    // console.log(`Question timer stopped at: ${formatElapsedTime(elapsedTime)}`);
   };
 
   const resetQuestionTimer = () => {
     setElapsedTime(0); // Reset elapsed time
     setIsTimerActive(true); // Restart the timer
-    console.log("Question timer reset.");
+    // console.log("Question timer reset.");
   };
 
   // Track the time spent on the current question
   const submitQuestion = () => {
-    console.log(
-      `Time spent on this question: ${formatElapsedTime(elapsedTime)}`
-    );
+    // console.log(
+    //   `Time spent on this question: ${formatElapsedTime(elapsedTime)}`
+    // );
     // You can send the time spent on this question to the API
   };
 
@@ -220,10 +226,11 @@ const NursingTestUI = ({ userId, examId }) => {
     try {
       const response = await submitEachAnswer(dataitem);
       if (response?.data?.status) {
+        setPressButton(false);
         stopTimer();
         getAllQuestion();
 
-        console.log("response ayitund", response);
+        // console.log("response ayitund", response);
 
         return response; // Return the response after success
       }
@@ -234,13 +241,32 @@ const NursingTestUI = ({ userId, examId }) => {
     }
   };
 
-  const handleNext = async (data) => {
+  const currentQuestion = exam?.questions[currentIndex];
+
+  const handleNext = async (data, key) => {
     const currentQuestion = exam?.questions[currentIndex];
     const answerData = responses;
 
-    console.log("answer", answerData);
-    console.log("selcted", globelSelecte);
+    let slectedItem = responses[exam?.questions[currentIndex]?.id]?.answer;
 
+    const timeDifference = initialTime - timeLeft;
+    const dataitem = {
+      user_id: user_id,
+      exam_id: exam_id,
+      question_id: currentQuestion?.id,
+      selected_answer: slectedItem === null ? [] : slectedItem, // Could be an array for multiple responses
+      question_type: currentQuestion?.type,
+      time_taken:
+        exam?.is_timed === "1"
+          ? formatTime(timeDifference)
+          : formatTime(timeLeft),
+    };
+
+    if (dataitem?.selected_answer !== undefined) {
+      console.log("next data", dataitem);
+
+      // Here api call check
+    }
 
     if (currentIndex < exam?.questions?.length - 1) {
       const nextIndex = currentIndex + 1; // Calculate the next index
@@ -248,14 +274,6 @@ const NursingTestUI = ({ userId, examId }) => {
 
       // Save the updated index to localStorage
       localStorage.setItem("currentIndex", nextIndex);
-
-      console.log("EXAM QUESTIONS - Current Index:", nextIndex);
-    }
-
-    try {
-      
-    } catch (error) {
-      
     }
   };
 
@@ -335,9 +353,12 @@ const NursingTestUI = ({ userId, examId }) => {
     stopTimer,
     handleStartTimer,
     handleNext,
+    handleNext,
+    pressNextButton,
+    setPressButton,
+    objRef,
 
     // not timed
-
     notTime: formatElapsedTime(elapsedTime),
   };
 
@@ -360,8 +381,6 @@ const NursingTestUI = ({ userId, examId }) => {
       setFeedBackModal(false);
     }
   };
-
-  const currentQuestion = exam?.questions[currentIndex];
 
   const onFinsh = async () => {
     const transformAnswers = (responses) => {
@@ -467,8 +486,6 @@ const NursingTestUI = ({ userId, examId }) => {
   };
 
   const sanitizedHtml = DOMPurify.sanitize(currentQuestion?.explanation);
-
-  console.log("get GLOBLE DATA", globelSelecte);
 
   return (
     <>

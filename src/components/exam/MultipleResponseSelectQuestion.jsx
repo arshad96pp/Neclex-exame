@@ -11,7 +11,7 @@ const MultipleResponseSelectQuestion = ({
   selectedValue,
   onChange,
   config,
-  handelNextFunction
+  handelNextFunction,
 }) => {
   const [selectedOptions, setSelectedOptions] = useState(selectedValue || []); // Initial value can be passed as a prop
   const {
@@ -116,35 +116,39 @@ const MultipleResponseSelectQuestion = ({
         <>
           <div>
             <ul className="ml-0 lg:ml-6 mb-5">
-              {question?.options?.map((option) => (
+              {question?.options?.map((option, index) => (
                 <li
-                  key={option}
-                  className="mb-3 flex items-center gap-2" // Adjust gap for better alignment
+                  key={index}
+                  className="mb-3 flex items-center gap-2" // Maintain consistent gap
                 >
-                  {/* Correct Answer Icon */}
-                  {option?.is_correct === "1" && (
-                    <CheckCircleOutlined
-                      className="text-green-500 mr-2"
-                      style={{ fontSize: "18px" }}
-                    />
-                  )}
-
-                  {/* Incorrect Answer Icon */}
-                  {question?.selected_answer?.includes(option?.id) &&
-                    option?.is_correct !== "1" && (
-                      <CloseCircleOutlined
-                        className="text-red-600 mr-2"
+                  {/* Icon container for correct/incorrect answer */}
+                  <div className="flex items-center" style={{ width: "24px" }}>
+                    {option?.is_correct === "1" ? (
+                      <CheckCircleOutlined
+                        className="text-green-500"
                         style={{ fontSize: "18px" }}
                       />
+                    ) : question?.selected_answer?.includes(option?.id) &&
+                      option?.is_correct !== "1" ? (
+                      <CloseCircleOutlined
+                        className="text-red-600"
+                        style={{ fontSize: "18px" }}
+                      />
+                    ) : (
+                      <div style={{ width: "18px" }} /> // Placeholder to maintain alignment
                     )}
+                  </div>
 
-                  {/* Checkbox */}
-                  <Checkbox
-                    checked={option?.is_correct === "1"} // Track whether the checkbox is checked
-                    className="flex items-center"
-                  >
-                    {removePTags(option?.option_text)}
-                  </Checkbox>
+                  {/* Checkbox with option text */}
+                  <div className="flex items-center">
+                    <Checkbox
+                      checked={option?.is_correct === "1"} // Track whether the checkbox is checked
+                    >
+                      <p className="text-[16px] ml-2">
+                        {removePTags(option?.option_text)}
+                      </p>
+                    </Checkbox>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -158,7 +162,7 @@ const MultipleResponseSelectQuestion = ({
                     <BookmarkAddedRoundedIcon />
                   </span>
                   <div>
-                  <p className="text-xs">{question?.time_taken}</p>
+                    <p className="text-xs">{question?.time_taken}</p>
                     <p className="text-xs">Scored max</p>
                   </div>
                 </div>

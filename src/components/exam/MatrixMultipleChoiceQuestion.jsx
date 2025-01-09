@@ -70,7 +70,7 @@ const MatrixMultipleChoiceQuestion = ({
 
       if (response?.status) {
         getAllQuestion();
-        console.log("responseee", response);
+    
       }
     } catch (error) {
       console.log(error);

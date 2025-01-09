@@ -12,8 +12,7 @@ const MultipleResponseSelectApplyQuestion = ({
   selectedValue,
   onChange,
   config,
-  handelNextFunction
-
+  handelNextFunction,
 }) => {
   // Use state to keep track of selected options
   const [selectedOptions, setSelectedOptions] = useState(selectedValue || []); // Initial value can be passed as a prop
@@ -107,39 +106,46 @@ const MultipleResponseSelectApplyQuestion = ({
             {/* Options Section */}
             <div>
               <ul className="ml-0 lg:ml-6 mb-5">
-                {question?.options?.map((option) => (
+                {question?.options?.map((option, index) => (
                   <li
-                    key={option}
-                    className="mb-3 flex items-center gap-2" // Adjust gap for better alignment
+                    key={index}
+                    className="mb-3 flex items-center gap-2" // Maintain consistent gap
                   >
-                    {/* Correct Answer Icon */}
-                    {option?.is_correct === "1" && (
-                      <CheckCircleOutlined
-                        className="text-green-500 mr-2"
-                        style={{ fontSize: "18px" }}
-                      />
-                    )}
-
-                    {/* Incorrect Answer Icon */}
-                    {question?.selected_answer?.includes(option?.id) &&
-                      option?.is_correct !== "1" && (
-                        <CloseCircleOutlined
-                          className="text-red-600 mr-2"
+                    {/* Icon container for correct/incorrect answer */}
+                    <div
+                      className="flex items-center"
+                      style={{ width: "24px" }}
+                    >
+                      {option?.is_correct === "1" ? (
+                        <CheckCircleOutlined
+                          className="text-green-500"
                           style={{ fontSize: "18px" }}
                         />
+                      ) : question?.selected_answer?.includes(option?.id) &&
+                        option?.is_correct !== "1" ? (
+                        <CloseCircleOutlined
+                          className="text-red-600"
+                          style={{ fontSize: "18px" }}
+                        />
+                      ) : (
+                        <div style={{ width: "18px" }} /> // Placeholder for alignment
                       )}
+                    </div>
 
-                    {/* Checkbox */}
+                    {/* Checkbox and option text */}
                     <Checkbox
-                      checked={option?.is_correct === "1"} // Track whether the checkbox is checked
+                      checked={option?.is_correct === "1"} // Handle the checked state
                       className="flex items-center"
                     >
-                      {removePTags(option?.option_text)}
+                      <p className="text-[16px] ml-2">
+                        {removePTags(option?.option_text)}
+                      </p>
                     </Checkbox>
                   </li>
                 ))}
               </ul>
             </div>
+
             <div className="max-w-[90%] mt-9 m-auto h-20 bg-[#f3f3f354]  grid grid-cols-[1fr_1fr] shadow-[0px_4px_6px_rgba(0,0,0,0.1)]">
               <div className="p-2 grid place-items-center">
                 <div>
@@ -174,7 +180,7 @@ const MultipleResponseSelectApplyQuestion = ({
                       <WatchLaterRoundedIcon />
                     </span>
                     <div>
-                    <p className="text-xs">{question?.time_taken}</p>
+                      <p className="text-xs">{question?.time_taken}</p>
                       <p className="text-xs">Time Spend</p>
                     </div>
                   </div>
