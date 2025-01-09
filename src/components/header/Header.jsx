@@ -22,11 +22,11 @@ const Header = ({ config, currentQuestion }) => {
     formatTime,
     handleButtonClick,
     notTime,
-    
+    timeDataObje,
     
   } = config;
 
-  
+   const {currentSeconds,formatMyTimer}=timeDataObje
 
   return (
     <>
@@ -54,7 +54,7 @@ const Header = ({ config, currentQuestion }) => {
               {exam?.is_timed === "1" ? (
                 <h4 className="text-sm">{formatTime(timeLeft)}</h4>
               ) : (
-                <h4 className="text-sm">{notTime}</h4>
+                <h4 className="text-sm">{formatMyTimer(currentSeconds)}</h4>
               )}
             </div>
 

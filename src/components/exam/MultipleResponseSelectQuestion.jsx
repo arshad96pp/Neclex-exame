@@ -174,7 +174,7 @@ const MultipleResponseSelectQuestion = ({
                     <BookmarkAddedRoundedIcon />
                   </span>
                   <div>
-                    <p className="text-xs">{question?.time_taken}</p>
+                    <p className="text-xs">0/9</p>
                     <p className="text-xs">Scored max</p>
                   </div>
                 </div>
@@ -200,7 +200,7 @@ const MultipleResponseSelectQuestion = ({
                     <WatchLaterRoundedIcon />
                   </span>
                   <div>
-                    <p className="text-xs">02 secs</p>
+                    <p className="text-xs">{question?.time_taken}</p>
                     <p className="text-xs">Time Spend</p>
                   </div>
                 </div>

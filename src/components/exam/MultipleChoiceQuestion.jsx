@@ -35,10 +35,13 @@ const MultipleChoiceQuestion = ({
     pressNextButton,
     setPressButton,
     objRef,
+    timeDataObje,
   } = config;
 
   const [slected, setSelected] = useState(null);
   const { setGlobelSelecte } = useAppContext();
+
+  const { currentSeconds, formatMyTimer, lastIntervalTime,defRef } = timeDataObje;
 
   // Function to sanitize and remove <p> tags
   const cleanOptionText = (text) => {
@@ -49,12 +52,9 @@ const MultipleChoiceQuestion = ({
     return sanitized;
   };
 
-
-  
-
   const handelReviewClick = async () => {
     const timeDifference = initialTime - timeLeft;
-
+    console.log("time data minus", formatMyTimer(defRef));
     handleButtonClick();
     setNext(question?.id);
     const dataitem = {
@@ -66,7 +66,7 @@ const MultipleChoiceQuestion = ({
       time_taken:
         exam?.is_timed === "1"
           ? formatTime(timeDifference)
-          : formatTime(timeLeft),
+          : formatMyTimer(lastIntervalTime),
     };
 
     objRef.current = dataitem;
@@ -83,12 +83,21 @@ const MultipleChoiceQuestion = ({
   };
 
   useEffect(() => {
-    if (question?.is_attended !== 1) {
-      handleStartTimer();
+    if (exam?.is_timed === "1") {
+      if (question?.is_attended !== 1) {
+        handleStartTimer();
+      } else {
+        stopTimer();
+      }
     } else {
-      stopTimer();
+      if (question?.is_attended !== 1) {
+        timeDataObje.startMyTimer();
+      } else {
+        timeDataObje.stopMyTimer();
+      }
     }
   }, [question?.is_attended]);
+  
 
   return (
     <div>

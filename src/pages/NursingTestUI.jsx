@@ -24,7 +24,7 @@ import EndExamModal from "../components/PopupsEnd/EndExamModal";
 import TimeOut from "../components/PopupsEnd/TimeOut";
 import { useAppContext } from "../context";
 
-const NursingTestUI = ({ userId, examId }) => {
+const NursingTestUI = ({ userId, examId,timeDataObje }) => {
   const [next, setNext] = useState(null);
   const { setGlobelSelecte, globelSelecte } = useAppContext();
 
@@ -226,7 +226,6 @@ const NursingTestUI = ({ userId, examId }) => {
     try {
       const response = await submitEachAnswer(dataitem);
       if (response?.data?.status) {
-        setPressButton(false);
         stopTimer();
         getAllQuestion();
 
@@ -360,6 +359,7 @@ const NursingTestUI = ({ userId, examId }) => {
 
     // not timed
     notTime: formatElapsedTime(elapsedTime),
+    timeDataObje
   };
 
   const handleNoteChange = () => {};
@@ -436,8 +436,6 @@ const NursingTestUI = ({ userId, examId }) => {
       console.error("Something went wrong:", error);
     }
   };
-
-  // console.log("ITTTTTTT", currentQuestion);
 
   const renderQuestion = (question) => {
     if (!question) return null;
